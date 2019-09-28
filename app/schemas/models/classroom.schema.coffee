@@ -16,13 +16,20 @@ _.extend ClassroomSchema.properties,
   averageStudentExp: { type: 'string' }
   ageRangeMin: { type: 'string' }
   ageRangeMax: { type: 'string' }
+  classDateStart: c.stringDate()
+  classDateEnd: c.stringDate()
+  classesPerWeek: { type: 'string' }
+  minutesPerClass: { type: 'string' }
   archived:
     type: 'boolean'
     default: false
     description: 'Visual only; determines if the classroom is in the "archived" list of the normal list.'
   courses: c.array { title: 'Courses' }, c.object { title: 'Course' }, {
     _id: c.objectId()
+    updated: c.stringDate()
     levels: c.array { title: 'Levels' }, c.object { title: 'Level' }, {
+      assessment: {type: ['boolean', 'string']}
+      assessmentPlacement: { type: 'string' }
       practice: {type: 'boolean'}
       practiceThresholdMinutes: {type: 'number'}
       primerLanguage: { type: 'string', enum: ['javascript', 'python'] }
@@ -31,8 +38,30 @@ _.extend ClassroomSchema.properties,
       original: c.objectId()
       name: {type: 'string'}
       slug: {type: 'string'}
+      position: c.point2d()
+
+      # properties relevant for ozaria campaigns 
+      nextLevels: {
+        type: 'object'
+        description: 'object containing next levels original id and their details'
+        additionalProperties: { # key is the level original id
+          type: 'object'
+          properties: {
+            type: c.shortString()
+            original: c.objectId()
+            name: {type: 'string'}
+            slug: {type: 'string'}
+            nextLevelStage: {type: 'number', title: 'Next Level Stage', description: 'Which capstone stage is unlocked'}
+            conditions: c.object({}, {
+              afterCapstoneStage: {type: 'number', title: 'After Capstone Stage', description: 'What capstone stage needs to be completed to unlock this next level'}
+            })
+          }
+        }
+      }
+      first: {type: 'boolean', description: 'Is it the first level in the campaign' }
     }
   }
+  googleClassroomId: { title: 'Google classroom id', type: 'string' }
   settings: c.object {title: 'Classroom Settings', required: []}, {
     optionsEditable: { type: 'boolean', description: 'Allow teacher to use these settings.', default: false }
     map: { type: 'boolean', description: 'Classroom map.', default: false }
@@ -40,7 +69,8 @@ _.extend ClassroomSchema.properties,
     gems: {type: 'boolean', description: 'Allow students to earn gems.', default: false}
     xp: {type: 'boolean', description: 'Students collect XP and level up.', default: false}
   }
-   
+
+  stats: c.object { additionalProperties: true }
 
 c.extendBasicProperties ClassroomSchema, 'Classroom'
 ClassroomSchema.properties.settings.additionalProperties = true

@@ -7,6 +7,8 @@ if view.showAds()
     script.
       (adsbygoogle = window.adsbygoogle || []).push({});
 
+include game-dev-goals.jade
+
 .game-container
   #level-loading-view
 
@@ -38,6 +40,7 @@ if view.showAds()
 
       #gold-view
 
+      #game-dev-track-view
 
       #level-chat-view
 
@@ -50,6 +53,10 @@ if view.showAds()
       #thang-hud
 
       #level-dialogue-view
+
+      button.btn.btn-lg.btn-primary.banner.header-font#stop-cinematic-playback-button(data-i18n="[title]common.continue;common.continue")
+
+    #surface-context-menu-view
 
     if features.codePlay
       a(href=document.location.protocol+"//lenovogamestate.com/pages/products/")
@@ -68,12 +75,23 @@ if view.showAds()
       else
         span(data-i18n="play_level.skip")
 
+    #cinematic-code-display
+      for i in [0, 1, 2, 3, 4, 5, 6]
+        div(class="code-line code-line-" + i)
+          code.line-number
+          code.indentation
+          code.code-text
+
     #how-to-play-game-dev-panel.panel.panel-default.hide.style-flat
       .panel-heading
         h3.panel-title
           span(data-i18n="play_level.directions")
           | :
-      .panel-body!= view.howToPlayText
+      if view.studentGoals && view.studentGoals.length
+        .panel-body
+          +game-dev-goals(view.studentGoals)
+      else
+        .panel-body!= view.howToPlayText
 
     .hints-view.hide
 

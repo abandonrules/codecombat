@@ -1,3 +1,4 @@
+require('app/styles/play/ladder/ladder-tab-view.sass')
 CocoView = require 'views/core/CocoView'
 CocoClass = require 'core/CocoClass'
 Level = require 'models/Level'
@@ -5,15 +6,18 @@ LevelSession = require 'models/LevelSession'
 CocoCollection = require 'collections/CocoCollection'
 User = require 'models/User'
 LeaderboardCollection  = require 'collections/LeaderboardCollection'
-{teamDataFromLevel} = require './utils'
+{teamDataFromLevel, scoreForDisplay} = require './utils'
 ModelModal = require 'views/modal/ModelModal'
-require 'vendor/d3'
+require 'd3/d3.js'
+CreateAccountModal = require 'views/core/CreateAccountModal'
+utils = require 'core/utils'
 
 HIGHEST_SCORE = 1000000
 
 module.exports = class LadderTabView extends CocoView
   id: 'ladder-tab-view'
   template: require 'templates/play/ladder/ladder-tab-view'
+  scoreForDisplay: scoreForDisplay
 
   events:
     'click .connect-facebook': 'onConnectFacebook'
@@ -21,6 +25,7 @@ module.exports = class LadderTabView extends CocoView
     'click .name-col-cell': 'onClickPlayerName'
     'click .spectate-cell': 'onClickSpectateCell'
     'click .load-more-ladder-entries': 'onLoadMoreLadderEntries'
+    'click [data-toggle="coco-modal"][data-target="core/CreateAccountModal"]': 'openCreateAccountModal'
 
     # Refactored, to-reimplement
 #  subscriptions:
@@ -39,6 +44,10 @@ module.exports = class LadderTabView extends CocoView
     # Trying not loading the FP/G+ stuff for now to see if anyone complains they were using it so we can have just two columns.
     #@socialNetworkRes = @supermodel.addSomethingResource('social_network_apis', 0)
     #@checkFriends()
+
+  openCreateAccountModal: (e) ->
+    e.stopPropagation()
+    @openModalView new CreateAccountModal()
 
   checkFriends: ->
     return  # Skipping for now
@@ -160,7 +169,7 @@ module.exports = class LadderTabView extends CocoView
     return if not @options.league and (new Date() - 2 * 60 * 1000 < @lastRefreshTime)
     @lastRefreshTime = new Date()
     @supermodel.resetProgress()
-    @ladderLimit ?= parseInt @getQueryVariable('top_players', if @options.league then 100 else 20)
+    @ladderLimit ?= parseInt utils.getQueryVariable('top_players', if @options.league then 100 else 20)
     for team in @teams
       if oldLeaderboard = @leaderboards[team.id]
         @supermodel.removeModelResource oldLeaderboard
@@ -180,7 +189,7 @@ module.exports = class LadderTabView extends CocoView
       histogramData = null
       $.when(
         level = "#{@level.get('original')}.#{@level.get('version').major}"
-        url = "/db/level/#{level}/histogram_data?team=#{team.name.toLowerCase()}"
+        url = "/db/level/#{level}/histogram_data?team=#{team.name.toLowerCase()}&levelSlug=#{@level.get('slug')}"
         url += '&leagues.leagueID=' + @options.league.id if @options.league
         $.get url, (data) -> histogramData = data
       ).then =>
@@ -189,7 +198,7 @@ module.exports = class LadderTabView extends CocoView
   generateHistogram: (histogramElement, histogramData, teamName) ->
     #renders twice, hack fix
     if $('#' + histogramElement.attr('id')).has('svg').length then return
-    histogramData = histogramData.map (d) -> d*100
+    histogramData = histogramData.map (d) -> scoreForDisplay d
 
     margin =
       top: 20
@@ -202,8 +211,9 @@ module.exports = class LadderTabView extends CocoView
 
     formatCount = d3.format(',.0')
 
-    minX = Math.floor(Math.min(histogramData...) / 1000) * 1000
-    maxX = Math.ceil(Math.max(histogramData...) / 1000) * 1000
+    axisFactor = 1000
+    minX = Math.floor(Math.min(histogramData...) / axisFactor) * axisFactor
+    maxX = Math.ceil(Math.max(histogramData...) / axisFactor) * axisFactor
     x = d3.scale.linear().domain([minX, maxX]).range([0, width])
     data = d3.layout.histogram().bins(x.ticks(20))(histogramData)
     y = d3.scale.linear().domain([0, d3.max(data, (d) -> d.y)]).range([height, 10])
@@ -232,9 +242,10 @@ module.exports = class LadderTabView extends CocoView
       .attr('height', (d) -> height - y(d.y))
     if session = @leaderboards[teamName].session
       if @options.league
-        playerScore = (_.find(session.get('leagues'), {leagueID: @options.league.id})?.stats.totalScore or 10) * 100
+        playerScore = (_.find(session.get('leagues'), {leagueID: @options.league.id})?.stats.totalScore or 10)
       else
-        playerScore = session.get('totalScore') * 100
+        playerScore = session.get('totalScore')
+      playerScore = scoreForDisplay playerScore
       scorebar = svg.selectAll('.specialbar')
         .data([playerScore])
         .enter().append('g')
@@ -251,12 +262,15 @@ module.exports = class LadderTabView extends CocoView
 
     message = "#{histogramData.length} players"
     if @leaderboards[teamName].session?
+      # TODO: i18n for these messages
       if @options.league
         # TODO: fix server handler to properly fetch myRank with a leagueID
         message = "#{histogramData.length} players in league"
       else if @leaderboards[teamName].myRank <= histogramData.length
         message = "##{@leaderboards[teamName].myRank} of #{histogramData.length}"
         message += "+" if histogramData.length >= 100000
+      else if @leaderboards[teamName].myRank is 'unknown'
+        message = "#{if histogramData.length >= 100000 then '100,000+' else histogramData.length} players"
       else
         message = 'Rank your session!'
     svg.append('g')
@@ -342,7 +356,7 @@ module.exports.LeaderboardData = LeaderboardData = class LeaderboardData extends
         promises.push @playersBelow.fetch cache: false
         level = "#{@level.get('original')}.#{@level.get('version').major}"
         success = (@myRank) =>
-        loadURL = "/db/level/#{level}/leaderboard_rank?scoreOffset=#{score}&team=#{@team}"
+        loadURL = "/db/level/#{level}/leaderboard_rank?scoreOffset=#{score}&team=#{@team}&levelSlug=#{@level.get('slug')}"
         loadURL += '&leagues.leagueID=' + @league.id if @league
         promises.push $.ajax(loadURL, cache: false, success: success)
     @promise = $.when(promises...)
@@ -377,7 +391,9 @@ module.exports.LeaderboardData = LeaderboardData = class LeaderboardData extends
     l.reverse()
     l.push @session
     l = l.concat(@playersBelow.models)
-    if @myRank
+    if @myRank is 'unknown'
+      session.rank ?= '' for session in l
+    else if @myRank
       startRank = @myRank - 4
       session.rank = startRank + i for session, i in l
     l

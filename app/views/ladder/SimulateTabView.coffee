@@ -3,6 +3,7 @@ CocoClass = require 'core/CocoClass'
 SimulatorsLeaderboardCollection = require 'collections/SimulatorsLeaderboardCollection'
 Simulator = require 'lib/simulator/Simulator'
 {me} = require 'core/auth'
+loadAetherLanguage = require("lib/loadAetherLanguage");
 
 module.exports = class SimulateTabView extends CocoView
   id: 'simulate-tab-view'
@@ -15,16 +16,16 @@ module.exports = class SimulateTabView extends CocoView
     @simulatorsLeaderboardData = new SimulatorsLeaderboardData(me)
     @simulatorsLeaderboardDataRes = @supermodel.addModelResource(@simulatorsLeaderboardData, 'top_simulators', {cache: false})
     @simulatorsLeaderboardDataRes.load()
-    require 'vendor/aether-javascript'
-    require 'vendor/aether-python'
-    require 'vendor/aether-coffeescript'
-    require 'vendor/aether-lua'
-    require 'vendor/aether-java'
+    Promise.all(
+      ["javascript", "python", "coffeescript", "lua"].map(
+        loadAetherLanguage
+      )
+    )
 
   onLoaded: ->
     super()
     @render()
-    if (document.location.hash is '#simulate' or @options.level.isType('course-ladder')) and not @simulator
+    if not @simulator and (document.location.hash is '#simulate' or @options.level.get('slug') not in ['ace-of-coders', 'zero-sum'])
       @startSimulating()
 
   afterRender: ->

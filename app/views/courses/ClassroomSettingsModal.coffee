@@ -1,8 +1,10 @@
+require('app/styles/courses/classroom-settings-modal.sass')
 Classroom = require 'models/Classroom'
 ModalView = require 'views/core/ModalView'
 template = require 'templates/courses/classroom-settings-modal'
 forms = require 'core/forms'
 errors = require 'core/errors'
+GoogleClassroomHandler = require('core/social-handlers/GoogleClassroomHandler')
 
 module.exports = class ClassroomSettingsModal extends ModalView
   id: 'classroom-settings-modal'
@@ -13,9 +15,13 @@ module.exports = class ClassroomSettingsModal extends ModalView
     'click #save-settings-btn': 'onSubmitForm'
     'click #update-courses-btn': 'onClickUpdateCoursesButton'
     'submit form': 'onSubmitForm'
+    'click #link-google-classroom-btn': 'onClickLinkGoogleClassroom'
+    'click .create-manually': 'onClickCreateManually'
 
   initialize: (options={}) ->
     @classroom = options.classroom or new Classroom()
+    @googleClassrooms = me.get('googleClassrooms') || []
+    @isGoogleClassroom = false
 
   afterRender: ->
     super()
@@ -33,20 +39,16 @@ module.exports = class ClassroomSettingsModal extends ModalView
     else
       forms.setErrorToProperty(form, 'language', $.i18n.t('common.required_field'))
       return
-    
-    settings = @classroom.get('settings') or {}
-    mayTweak = settings?.optionsEditable or me.isAdmin()
-    for k in Object.keys(attrs)
-      if /^settings\//.test(k)
-        val = (attrs[k].length > 0)
-        key = k.substring(9)
-        if val isnt @classroom.getSetting key
-          settings[key] = val
-        delete attrs[k]
 
-    if mayTweak
-      attrs.settings = settings
-    
+    if !@isGoogleClassroom
+      delete attrs.googleClassroomId
+    else if attrs.googleClassroomId
+      gClass = me.get('googleClassrooms').find((c)=>c.id==attrs.googleClassroomId)
+      attrs.name = gClass.name
+    else
+      forms.setErrorToProperty(form, 'googleClassroomId', $.i18n.t('common.required_field'))
+      return
+
     @classroom.set(attrs)
     schemaErrors = @classroom.getValidationErrors()
     if schemaErrors
@@ -77,3 +79,44 @@ module.exports = class ClassroomSettingsModal extends ModalView
       console.log 'e', e
       @$('#update-courses-btn').attr('disabled', false)
       noty { text: e.responseJSON?.message or e.responseText or 'Error!', type: 'error', timeout: 5000 }
+
+  shouldShowGoogleClassroomButton: ->
+    me.useGoogleClassroom() && @classroom.isNew()
+
+  onClickLinkGoogleClassroom: ->
+    $('#link-google-classroom-btn').text("Linking...")
+    $('#link-google-classroom-btn').attr('disabled', true)
+    application.gplusHandler.loadAPI({
+      success: =>
+        application.gplusHandler.connect({
+          scope: GoogleClassroomHandler.scopes
+          success: =>
+            @linkGoogleClassroom()
+          error: =>
+            $('#link-google-classroom-btn').text($.i18n.t("courses.link_google_classroom"))
+            $('#link-google-classroom-btn').attr('disabled', false)
+        })
+    })
+
+  linkGoogleClassroom: ->
+    @isGoogleClassroom = true
+    GoogleClassroomHandler.importClassrooms()
+    .then(() =>
+      @googleClassrooms = me.get('googleClassrooms').filter((c) => !c.importedToCoco && !c.deletedFromGC)
+      @render()
+      $('.google-class-name').show()
+      $('.class-name').hide()
+      $('#link-google-classroom-btn').hide()
+    )
+    .catch((e) => 
+      noty { text: e or "Error in importing classrooms", layout: 'topCenter', type: 'error', timeout: 3000 }
+      @render()
+    )
+
+
+  onClickCreateManually: ->
+    @isGoogleClassroom = false
+    @render()
+    $('.google-class-name').hide()
+    $('.class-name').show()
+    $('#link-google-classroom-btn').show()

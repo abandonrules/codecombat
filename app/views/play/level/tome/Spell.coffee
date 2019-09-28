@@ -71,6 +71,16 @@ module.exports = class Spell
   setLanguage: (@language) ->
     @language = 'html' if @level.isType('web-dev')
     @displayCodeLanguage = utils.capitalLanguages[@language]
+    if @language is 'java' and not @languages[@language]
+      lines = (@languages.javascript ? '').split '\n'
+      lines.push '' if lines[lines.length - 1] isnt ''
+      @languages.java = """
+        public class AI {
+          public static void main(String[] args) {
+        #{(lines.map ((line) -> '    ' + line)).join('\n')}
+          }
+        }
+      """
     @originalSource = @languages[@language] ? @languages.javascript
     @originalSource = @addPicoCTFProblem() if window.serverConfig.picoCTF
 
@@ -147,6 +157,7 @@ module.exports = class Spell
       source = @getSource()
     unless @language is 'html'
       @thang?.aether.transpile source
+      @session.lastAST = @thang?.aether.ast
     null
 
   # NOTE: By default, I think this compares the current source code with the source *last saved to the server* (not the last time it was run)
@@ -239,6 +250,8 @@ module.exports = class Spell
           @problemContext.thisProperties.push prop
 
     # TODO: See SpellPaletteView.createPalette() for other interesting contextual properties
+
+    @problemContext.thisValueAlias = if @level.isType('game-dev') then 'game' else 'hero'
 
     @problemContext
 

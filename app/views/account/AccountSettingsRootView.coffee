@@ -1,3 +1,4 @@
+require('app/styles/account/account-settings-view.sass')
 RootView = require 'views/core/RootView'
 template = require 'templates/account/account-settings-root-view'
 AccountSettingsView = require './AccountSettingsView'
@@ -6,9 +7,12 @@ CreateAccountModal = require 'views/core/CreateAccountModal'
 module.exports = class AccountSettingsRootView extends RootView
   id: "account-settings-root-view"
   template: template
-  
+
   events:
     'click #save-button': -> @accountSettingsView.save()
+
+  getMeta: ->
+    title: $.i18n.t 'account.settings_title'
 
   shortcuts:
     'enter': -> @

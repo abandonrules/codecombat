@@ -1,3 +1,4 @@
+require('app/styles/play/ladder/play_modal.sass')
 ModalView = require 'views/core/ModalView'
 template = require 'templates/play/ladder/play_modal'
 ThangType = require 'models/ThangType'
@@ -35,7 +36,8 @@ module.exports = class LadderPlayModal extends ModalView
       {id: 'javascript', name: 'JavaScript'}
       {id: 'coffeescript', name: 'CoffeeScript (Experimental)'}
       {id: 'lua', name: 'Lua'}
-      {id: 'java', name: 'Java'}
+      # TODO: Bring java back once it's supported
+      # {id: 'java', name: 'Java'}
     ]
     @myName = me.get('name') || 'Newcomer'
 
@@ -104,6 +106,7 @@ module.exports = class LadderPlayModal extends ModalView
   finishRendering: ->
     return if @destroyed
     @checkTutorialLevelExists (exists) =>
+      return if @destroyed
       @tutorialLevelExists = exists
       @render()
       @maybeShowTutorialButtons()

@@ -131,7 +131,7 @@ describe 'TeacherClassView', ->
             expect(@view.enrollStudents).toHaveBeenCalled()
             users = @view.enrollStudents.calls.argsFor(0)[0]
             expect(users.size()).toBe(1)
-            expect(users.first().id).toBe(@view.students.first().id)
+            expect(users.first().id).toBe(@view.students.rest()[0].id) # TODO: Make test less brittle
 
       ###
         describe 'Revoke button', ->
@@ -180,6 +180,7 @@ describe 'TeacherClassView', ->
                   expect(simplerLine).toMatch /0,0,0/
               done()
             reader.readAsText(blob);
+          @view.calculateProgressAndLevelsAux()
           @view.$el.find('.export-student-progress-btn').click()
 
     describe 'when javascript classroom', ->
@@ -240,6 +241,7 @@ describe 'TeacherClassView', ->
                   expect(simplerLine).toMatch /0,0,0/
               done()
             reader.readAsText(blob);
+          @view.calculateProgressAndLevelsAux()
           @view.$el.find('.export-student-progress-btn').click()
 
     describe '.assignCourse(courseID, members)', ->
@@ -384,13 +386,15 @@ describe 'TeacherClassView', ->
           @view.wait('begin-assign-course').then(done)
 
         it 'adds students to the course instances', ->
-          request = jasmine.Ajax.requests.mostRecent()
+          expect(@courseInstance.fakeRequests.length).toBe(1)
+          request = @courseInstance.fakeRequests[0]
           expect(request.url).toBe("/db/course_instance/#{@courseInstance.id}/members")
           expect(request.method).toBe('POST')
 
         it 'shows a noty if POSTing students fails', (done) ->
           @notySpy.and.callFake(done)
-          request = jasmine.Ajax.requests.mostRecent()
+          expect(@courseInstance.fakeRequests.length).toBe(1)
+          request = @courseInstance.fakeRequests[0]
           request.respondWith({
             status: 500,
             responseText: JSON.stringify({ message: "Internal Server Error" })

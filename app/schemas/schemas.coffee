@@ -125,6 +125,13 @@ me.extendSearchableProperties = (schema) ->
   schema.properties = {} unless schema.properties?
   _.extend(schema.properties, searchableProps())
 
+algoliaSearchableProps = ->
+  _algoliaObjectID: { type: 'string' }
+
+me.extendAlgoliaProperties = (schema) ->
+  schema.properties = {} unless schema.properties?
+  _.extend(schema.properties, algoliaSearchableProps())
+
 # PERMISSIONED
 
 permissionsProps = ->
@@ -243,3 +250,5 @@ me.task = me.object {title: 'Task', description: 'A task to be completed', forma
   complete: {title: 'Complete', description: 'Whether this task is done.', type: 'boolean', format: 'checkbox'}
 
 me.concept = {type: 'string', enum: (concept.concept for concept in concepts), format: 'concept'}
+
+me.scoreType = me.shortString(title: 'Score Type', 'enum': ['time', 'damage-taken', 'damage-dealt', 'gold-collected', 'difficulty', 'code-length', 'survival-time', 'defeated'])  # TODO: total gear value.

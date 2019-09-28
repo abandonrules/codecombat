@@ -1,3 +1,4 @@
+require('app/styles/courses/enrollments-view.sass')
 RootView = require 'views/core/RootView'
 Classrooms = require 'collections/Classrooms'
 State = require 'models/State'
@@ -20,6 +21,7 @@ ShareLicensesModal = require 'views/teachers/ShareLicensesModal'
 module.exports = class EnrollmentsView extends RootView
   id: 'enrollments-view'
   template: template
+  enrollmentRequestSent: false
 
   events:
     'click #enroll-students-btn': 'onClickEnrollStudentsButton'
@@ -28,7 +30,7 @@ module.exports = class EnrollmentsView extends RootView
     'click .share-licenses-link': 'onClickShareLicensesLink'
 
   getTitle: -> return $.i18n.t('teacher.enrollments')
-  
+
   i18nData: ->
     starterLicenseCourseList: @state.get('starterLicenseCourseList')
 
@@ -44,7 +46,7 @@ module.exports = class EnrollmentsView extends RootView
         'available': []
         'pending': []
       }
-      shouldUpsell: true
+      shouldUpsell: false
     })
     window.tracker?.trackEvent 'Classes Licenses Loaded', category: 'Teachers', ['Mixpanel']
     super(options)
@@ -63,24 +65,16 @@ module.exports = class EnrollmentsView extends RootView
     @supermodel.trackRequest @classrooms.fetchMine()
     @prepaids = new Prepaids()
     @supermodel.trackRequest @prepaids.fetchMineAndShared()
-    @listenTo @prepaids, 'sync', ->
-      @prepaids.each (prepaid) =>
-        prepaid.creator = new User()
-        # We never need this information if the user would be `me`
-        if prepaid.get('creator') isnt me.id
-          @supermodel.trackRequest prepaid.creator.fetchCreatorOfPrepaid(prepaid)
+    @listenTo @prepaids, 'sync', @onPrepaidsSync
     @debouncedRender = _.debounce @render, 0
     @listenTo @prepaids, 'sync', @updatePrepaidGroups
     @listenTo(@state, 'all', @debouncedRender)
-    @listenTo(me, 'change:enrollmentRequestSent', @debouncedRender)
+
+    me.getClientCreatorPermissions()?.then(() => @render?())
 
     leadPriorityRequest = me.getLeadPriority()
     @supermodel.trackRequest leadPriorityRequest
-    leadPriorityRequest.then ({ priority }) =>
-      shouldUpsell = (priority is 'low')
-      @state.set({ shouldUpsell })
-      if shouldUpsell
-        application.tracker?.trackEvent 'Starter License Upsell: Banner Viewed', {price: @state.get('centsPerStudent'), seats: @state.get('quantityToBuy')}
+    leadPriorityRequest.then (r) => @onLeadPriorityResponse(r)
 
   getStarterLicenseCourseList: ->
     return if !@courses.loaded
@@ -98,6 +92,34 @@ module.exports = class EnrollmentsView extends RootView
     @calculateEnrollmentStats()
     @state.set('totalCourses', @courses.size())
     super()
+
+  onPrepaidsSync: ->
+    @prepaids.each (prepaid) =>
+      prepaid.creator = new User()
+      # We never need this information if the user would be `me`
+      if prepaid.get('creator') isnt me.id
+        @supermodel.trackRequest prepaid.creator.fetchCreatorOfPrepaid(prepaid)
+
+    @decideUpsell()
+
+  onLeadPriorityResponse: ({ priority }) ->
+    @state.set({ leadPriority: priority })
+    @decideUpsell()
+
+  decideUpsell: ->
+    # There are also non classroom prepaids.  We only use the course or starter_license prepaids to determine
+    # if we should skip upsell (we ignore the others).
+
+    coursePrepaids = @prepaids.filter((p) => p.get('type') == 'course')
+
+    skipUpsellDueToExistingLicenses = coursePrepaids.length > 0
+    shouldUpsell = !skipUpsellDueToExistingLicenses and (@state.get('leadPriority') is 'low') and (me.get('preferredLanguage') isnt 'nl-BE')
+
+    @state.set({ shouldUpsell })
+
+    if shouldUpsell and not @upsellTracked
+      @upsellTracked = true
+      application.tracker?.trackEvent 'Starter License Upsell: Banner Viewed', {price: @state.get('centsPerStudent'), seats: @state.get('quantityToBuy')}
 
   updatePrepaidGroups: ->
     @state.set('prepaidGroups', @prepaids.groupBy((p) -> p.status()))
@@ -135,7 +157,11 @@ module.exports = class EnrollmentsView extends RootView
 
   onClickContactUsButton: ->
     window.tracker?.trackEvent 'Classes Licenses Contact Us', category: 'Teachers', ['Mixpanel']
-    @openModalView(new TeachersContactModal())
+    modal = new TeachersContactModal()
+    @openModalView(modal)
+    modal.on 'submit', =>
+      @enrollmentRequestSent = true
+      @debouncedRender()
 
   onClickEnrollStudentsButton: ->
     window.tracker?.trackEvent 'Classes Licenses Enroll Students', category: 'Teachers', ['Mixpanel']

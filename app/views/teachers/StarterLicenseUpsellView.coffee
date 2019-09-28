@@ -1,3 +1,4 @@
+require('app/styles/teachers/starter-license-upsell-view.sass')
 RootView = require 'views/core/RootView'
 State = require 'models/State'
 Products = require 'collections/Products'
@@ -45,6 +46,7 @@ module.exports = class StarterLicenseUpsellView extends RootView
     # Listen for language change
     @listenTo me, 'change:preferredLanguage', ->
       @state.set { starterLicenseCourseList: @getStarterLicenseCourseList() }
+    me.getClientCreatorPermissions()?.then(() => @render?())
       
   onLoaded: ->
     @state.set { starterLicenseCourseList: @getStarterLicenseCourseList() }

@@ -1,5 +1,8 @@
 if features.codePlay
   img#codeplay-powered-by-banner(src="/images/common/codeplay/CodePlay.png")
+  
+if showAmazonLogo
+  img#amazon-level-logo(src="/images/pages/play/amazon_horz_lockup.png")
 
 .hinge.hinge-0
 .hinge.hinge-1
@@ -24,6 +27,10 @@ if features.codePlay
   if view.hintsState && view.hintsState.get('total') > 0
     .btn.btn-small.btn-illustrated.hints-button
       span(data-i18n="play_level.hints")
+
+  if view.showVideosButton()
+    .btn.btn-small.btn-illustrated.btn-success.videos-button
+      span(data-i18n="play_level.videos")
 
   if view.options.level.isType('web-dev')
     .btn.btn-small.btn-illustrated.image-gallery-button

@@ -17,6 +17,7 @@ block content
         th(data-i18n="account.paid_on")
         th(data-i18n="account.price")
         th(data-i18n="account.gems")
+        th(data-i18n="general.description")
       for payment in view.payments.models
         - var service = payment.get('service') || '';
         - var productID = payment.get('productID');
@@ -37,19 +38,31 @@ block content
           else if productID === 'custom'
             td= payment.get('description')
           else if productID
-            td(data-i18n="account.gems")
-          else if me.get('stripe').free != null
-            if typeof(me.get('stripe').free) === 'boolean'
-              if me.get('stripe').customerID
+            if /lifetime_subscription$/.test(productID)
+              td(data-i18n="subscribe.lifetime")
+            else if /year_subscription$/.test(productID)
+              td(data-i18n="subscribe.year_subscription")
+            else if /basic_subscription$/.test(productID)
+              td(data-i18n="subscribe.stripe_description")
+            else
+              td(data-i18n="account.gems")
+          else if me.get('stripe') && me.get('stripe').free != null
+            - var purchaseDate = new Date(payment.get('created'));
+            if typeof(me.get('stripe').free) === 'boolean' && purchaseDate > new Date(2017, 0, 1)
+              if me.get('stripe').customerID || payment.get('gems') >= 18000
                 td(data-i18n="subscribe.lifetime")
               else
                 td(data-i18n="subscribe.free_subscription")
-            else
+            else if payment.get('gems') >= 18000
               td(data-i18n="subscribe.year_subscription")
+            else
+              td(data-i18n="subscribe.stripe_description")
           else if service.toLowerCase() === 'paypal'
             td(data-i18n="subscribe.stripe_description")
           else
+            //- E.g. PayPal
             td(data-i18n="subscribe.stripe_description")
           td= moment(payment.getCreationDate()).format('l')
           td $#{((payment.get('amount') || 0) / 100).toFixed(2)}
           td= payment.get('gems') || 'n/a'
+          td= payment.get('description') || ''

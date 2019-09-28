@@ -1,3 +1,4 @@
+require('app/styles/account/account-settings-view.sass')
 CocoView = require 'views/core/CocoView'
 template = require 'templates/account/account-settings-view'
 forms = require 'core/forms'
@@ -14,13 +15,11 @@ module.exports = class AccountSettingsView extends CocoView
     'change .panel input': 'onChangePanelInput'
     'change #name-input': 'onChangeNameInput'
     'click #toggle-all-btn': 'onClickToggleAllButton'
-    'click #profile-photo-panel-body': 'onClickProfilePhotoPanelBody'
     'click #delete-account-btn': 'onClickDeleteAccountButton'
     'click #reset-progress-btn': 'onClickResetProgressButton'
     'click .resend-verification-email': 'onClickResendVerificationEmail'
 
   initialize: ->
-    require('core/services/filepicker')() unless window.application.isIPadApp  # Initialize if needed
     @uploadFilePath = "db/user/#{me.id}"
     @user = new User({_id: me.id})
     @supermodel.trackRequest(@user.fetch()) # use separate, fresh User object instead of `me`
@@ -51,10 +50,6 @@ module.exports = class AccountSettingsView extends CocoView
       else
         @suggestedName = newName
         forms.setErrorToProperty @$el, 'name', "That name is taken! How about #{newName}?", true
-
-  onPictureChanged: (e) =>
-    @trigger 'inputChanged', e
-    @$el.find('.gravatar-fallback').toggle not @user.get 'photoURL'
 
   onClickDeleteAccountButton: (e) ->
     @validateCredentialsForDestruction @$el.find('#delete-account-form'), =>
@@ -118,8 +113,8 @@ module.exports = class AccountSettingsView extends CocoView
             $('.nano').nanoScroller({scrollTo: @$el.find('.has-error')})
       setTimeout callback, 100
     else
-      message = $.i18n.t('account_settings.wrong_email', defaultValue: 'Wrong Email.')
-      err = [message: message, property: 'email', formatted: true]
+      message = $.i18n.t('account_settings.wrong_email', defaultValue: 'Wrong Email or Username.')
+      err = [message: message, property: 'emailOrUsername', formatted: true]
       forms.applyErrorsToForm($form, err)
       $('.nano').nanoScroller({scrollTo: @$el.find('.has-error')})
 
@@ -136,7 +131,7 @@ module.exports = class AccountSettingsView extends CocoView
           window?.webkit?.messageHandlers?.notification?.postMessage(name: "signOut") if window.application.isIPadApp
           Backbone.Mediator.publish("auth:logging-out", {})
           window.tracker?.trackEvent 'Log Out', category:'Homepage' if @id is 'home-view'
-          logoutUser($('#login-email').val())
+          logoutUser()
         , 500
       error: (jqXHR, status, error) ->
         console.error jqXHR
@@ -167,33 +162,6 @@ module.exports = class AccountSettingsView extends CocoView
           type: 'error'
           layout: 'topCenter'
       url: "/db/user/#{@user.id}/reset_progress"
-
-  onClickProfilePhotoPanelBody: (e) ->
-    return if window.application.isIPadApp  # TODO: have an iPad-native way of uploading a photo, since we don't want to load FilePicker on iPad (memory)
-    photoContainer = @$el.find('.profile-photo')
-    onSaving = =>
-      photoContainer.addClass('saving')
-    onSaved = (uploadingPath) =>
-      @$el.find('#photoURL').val(uploadingPath)
-      @$el.find('#photoURL').trigger('change') # cause for some reason editing the value doesn't trigger the jquery event
-      @user.set('photoURL', uploadingPath)
-      photoContainer.removeClass('saving').attr('src', @user.getPhotoURL(photoContainer.width()))
-    filepicker.pick {mimetypes: 'image/*', maxSize: Math.pow(2, 10*2)}, @onImageChosen(onSaving, onSaved)
-
-  formatImagePostData: (inkBlob) ->
-    url: inkBlob.url, filename: inkBlob.filename, mimetype: inkBlob.mimetype, path: @uploadFilePath, force: true
-
-  onImageChosen: (onSaving, onSaved) ->
-    (inkBlob) =>
-      onSaving()
-      uploadingPath = [@uploadFilePath, inkBlob.filename].join('/')
-      data = @formatImagePostData(inkBlob)
-      success = @onImageUploaded(onSaved, uploadingPath)
-      $.ajax '/file', type: 'POST', data: data, success: success
-
-  onImageUploaded: (onSaved, uploadingPath) ->
-    (e) =>
-      onSaved uploadingPath
 
 
   #- Misc
@@ -271,8 +239,6 @@ module.exports = class AccountSettingsView extends CocoView
     @user.set 'email', @$el.find('#email').val()
     for emailName, enabled of @getSubscriptions()
       @user.setEmailSubscription emailName, enabled
-
-    @user.set('photoURL', @$el.find('#photoURL').val())
 
     permissions = []
 

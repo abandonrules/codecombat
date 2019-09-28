@@ -10,7 +10,7 @@ _.extend CampaignSchema.properties, {
   i18n: {type: 'object', title: 'i18n', format: 'i18n', props: ['name', 'fullName', 'description']}
   fullName: { type: 'string', title: 'Full Name', description: 'Ex.: "Kithgard Dungeon"' }
   description: { type: 'string', format: 'string', description: 'How long it takes and what players learn.' }
-  type: c.shortString(title: 'Type', description: 'What kind of campaign this is.', 'enum': ['hero', 'course','hidden'])
+  type: c.shortString(title: 'Type', description: 'What kind of campaign this is.', 'enum': ['hero', 'course','hidden', 'hoc'])
 
   ambientSound: c.object {},
     mp3: { type: 'string', format: 'sound-file' }
@@ -53,6 +53,7 @@ _.extend CampaignSchema.properties, {
         ]
     }
   }}
+  isOzaria: {type: 'boolean', description: 'Is this an ozaria campaign', default: true }
   levelsUpdated: c.date()
 
   levels: { type: 'object', format: 'levels', additionalProperties: {
@@ -78,6 +79,24 @@ _.extend CampaignSchema.properties, {
       #- normal properties
       position: c.point2d()
 
+      # properties relevant for ozaria campaigns
+      nextLevels: {
+        type: 'object'
+        description: 'object containing next levels original id and their details'
+        format: 'levels' # key is level original id
+        additionalProperties: {
+          type: 'object'
+          format: 'nextLevel'
+          properties: {
+            nextLevelStage: {type: 'number', title: 'Next Level Stage', description: 'Which capstone stage is unlocked'}
+            conditions: c.object({}, {
+              afterCapstoneStage: {type: 'number', title: 'After Capstone Stage', description: 'What capstone stage needs to be completed to unlock this next level'}
+            })
+          }
+        }
+      }
+      first: {type: 'boolean', description: 'Is it the first level in the campaign', default: true }
+
       #- denormalized properties from Levels are cloned below
     }
 
@@ -95,6 +114,8 @@ CampaignSchema.denormalizedLevelProperties = [
   'slug'
   'original'
   'adventurer'
+  'assessment'
+  'assessmentPlacement'
   'practice'
   'practiceThresholdMinutes'
   'primerLanguage'
@@ -118,12 +139,16 @@ CampaignSchema.denormalizedLevelProperties = [
   'requiredProperties'
   'restrictedProperties'
   'recommendedHealth'
+  'maximumHealth'
   'concepts'
   'primaryConcepts'
   'picoCTFProblem'
   'campaign'
   'campaignIndex'
   'scoreTypes'
+  'isPlayedInStages'
+  'ozariaType'
+  'introContent'
 ]
 hiddenLevelProperties = ['name', 'description', 'i18n', 'replayable', 'slug', 'original', 'primerLanguage', 'shareable', 'concepts', 'scoreTypes']
 for prop in CampaignSchema.denormalizedLevelProperties
