@@ -2,7 +2,9 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
 
   new_home:
 #    title: "CodeCombat - Coding games to learn Python and JavaScript"
+#    meta_keywords: "CodeCombat, python, javascript, Coding Games"
 #    meta_description: "Learn typed code through a programming game. Learn Python, JavaScript, and HTML as you solve puzzles and learn to make your own coding games and websites."
+#    meta_og_url: "https://codecombat.com"
 #    built_for_teachers_title: "A Coding Game Built with Teachers in Mind"
 #    built_for_teachers_blurb: "Teaching kids to code can often feel overwhelming. CodeCombat helps all educators teach students how to code in either JavaScript or Python, two of the most popular programming languages. With a comprehensive curriculum that includes six computer science units and reinforces learning through project-based game development and web development units, kids will progress on a journey from basic syntax to recursion!"
 #    built_for_teachers_subtitle1: "Computer Science"
@@ -151,6 +153,13 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
     want_coco: "Желиш CodeCombat у својој школи?"
 #    educator: "Educator"
 #    student: "Student"
+#    our_coding_programs: "Our Coding Programs"
+#    codecombat: "CodeCombat"
+#    ozaria: "Ozaria"
+#    codecombat_blurb: "Our original coding game. Recommended for parents, individuals, educators, and students who want to experience one of the most-loved coding games in the world."
+#    ozaria_blurb: "An adventure game and Computer Science program where students master the lost magic of coding to save their world. Recommended for educators and students."
+#    try_codecombat: "Try CodeCombat"
+#    try_ozaria: "Try Ozaria"
 
   nav:
 #    educators: "Educators"
@@ -195,6 +204,7 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
     resource_hub: "Ресурси"
     apcsp: "AP CS принципи"
 #    parent: "Parents"
+#    browser_recommendation: "For the best experience we recommend using the latest version of Chrome. Download the browser here!"
 
   modal:
     close: "Затвори"
@@ -981,6 +991,7 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
     coffeescript_blurb: "Лепша JavaScript синтакса."
     lua_blurb: "Скриптни језик за игре."
     java_blurb: "(Само за претплатнике) Андроид и предузетништво."
+#    cpp_blurb: "(Subscriber Only) Game development and high performance computing."
     status: "Статус"
     weapons: "Оружја"
     weapons_warrior: "Мачеви - мали домет, без магије"
@@ -1091,26 +1102,28 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
 #    sean_title: "Senior Account Executive"
 #    liz_title: "Senior Account Executive"
 #    jane_title: "Account Executive"
-#    shan_title: "Partnership Development Lead, China"
-#    run_title: "Head of Operations, China"
-#    lance_title: "Software Engineer Intern, China"
+#    shan_title: "Head of Marketing, CodeCombat Greater China"
+#    run_title: "Head of Operations, CodeCombat Greater China"
+#    lance_title: "Head of Technology, CodeCombat Greater China"
+#    zhiran_title: "Head of Curriculum, CodeCombat Greater China"
+#    yuqiang_title: "Head of Innovation, CodeCombat Greater China"
 #    matias_title: "Senior Software Engineer"
 #    ryan_title: "Customer Support Specialist"
 #    maya_title: "Senior Curriculum Developer"
-#    bill_title: "General Manager, China"
+#    bill_title: "General Manager, CodeCombat Greater China"
 #    shasha_title: "Product and Visual Designer"
 #    daniela_title: "Marketing Manager"
 #    chelsea_title: "Operations Manager"
 #    claire_title: "Executive Assistant"
 #    bobby_title: "Game Designer"
-#    brian_title: "Lead Game Designer"
+#    brian_title: "Senior Game Design Manager"
 #    andrew_title: "Software Engineer"
 #    stephanie_title: "Customer Support Specialist"
 #    rob_title: "Sales Development Representative"
 #    shubhangi_title: "Senior Software Engineer"
-    bryukh_title: "Дизајнер игрице"
     retrostyle_title: "Илустрација"
     retrostyle_blurb: "RetroStyle игрице"
+    bryukh_title: "Дизајнер игрице"
     bryukh_blurb: "Креира пузле"
     community_title: "...и наша заједница отвореног кода"
     community_subtitle: "Преко 450 сарадника је помогло да се изгради CodeCombat и још њих се придружује сваке недеље!" # {change}
@@ -1252,6 +1265,7 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
     referrer_web: "Google"
     referrer_other: "Друго"
     anything_else: "Још нешто што треба да знамо?" # {change}
+#    anything_else_helper: ""
     thanks_header: "Захтев је примљен!"
     thanks_sub_header: "Хвала на интересовању за CodeCombat за твоју школу."
     thanks_p: "Контактираћемо те ускоро! Ако желиш да ступиш у контакт, можеш нас добити на:"
@@ -1639,6 +1653,9 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
 #    classes: "Classes"
 #    certificate_btn_print: "Print"
 #    certificate_btn_toggle: "Toggle"
+#    ask_next_course: "Want to play more? Ask your teacher for access to the next course."
+#    set_start_locked_level: "Set start locked level"
+#    no_level_limit: "No limit"
 
   project_gallery:
     no_projects_published: "Буди први који ће објавити пројекат у овом курсу!"
@@ -1979,7 +1996,7 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
     combo_explanation: "Ученици прелазе Комбо нивое изазова користећи бар један наведен концепт. Прегледај код ученика тако што ћеш кликнути на тачку напретка."
     concept: "Концепт"
 #    sync_google_classroom: "Sync Google Classroom"
-#    try_ozaria_footer: "Try our new adventrue game, Ozaria!"
+#    try_ozaria_footer: "Try our new adventure game, Ozaria!"
 
 #  teacher_ozaria_encouragement_modal:
 #    title: "Build Computer Science Skills to Save Ozaria"
@@ -2001,6 +2018,7 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
     teacher_not_found: "Наставник није пронађен. Постарајте се да овај наставник направи наставнички налог."
     teacher_not_valid: "Ово није правилан наставнички налог. Само наставнички налози могу да деле лиценце."
     already_shared: "Већ си поделио ове лциенце са тим наставником."
+#    have_not_shared: "You've not shared these licenses with that teacher."
     teachers_using_these: "Наставници који могу да приступе овим лиценцама:"
     footer: "Када наставници повуку лиценце од ученика, лиценце ће се вратити у дељене како би други наставници у овој групи могли да их користе."
     you: "(ти)"
@@ -2441,8 +2459,8 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
 #    fav_features: "Favorite Features"
 #    responsive_support: "Responsive Support"
 #    immediate_engagement: "Immediate Engagement"
-#    paragraph1: "Bobby Duke Middle School sits nestled between the \t    Southern California mountains of Coachella Valley to the west and east and the Salton Sea 33 miles south, and boasts a student population of 697 students within Coachella Valley Unified’s district-wide population of 18,861 students."
-#    paragraph2: "The students of Bobby Duke Middle School reflect the socioeconomic challenges facing Coachella Valley’s residents and students within the district. With over 95% of the Bobby Duke Middle School student population qualifying for free and reduced-price meals and over 40% classified as English language learners , the importance of teaching 21st century skills was the top priority of Bobby Duke Middle School Technology teacher, Scott Baily."
+#    paragraph1: "Bobby Duke Middle School sits nestled between the Southern California mountains of Coachella Valley to the west and east and the Salton Sea 33 miles south, and boasts a student population of 697 students within Coachella Valley Unified’s district-wide population of 18,861 students."
+#    paragraph2: "The students of Bobby Duke Middle School reflect the socioeconomic challenges facing Coachella Valley’s residents and students within the district. With over 95% of the Bobby Duke Middle School student population qualifying for free and reduced-price meals and over 40% classified as English language learners, the importance of teaching 21st century skills was the top priority of Bobby Duke Middle School Technology teacher, Scott Baily."
 #    paragraph3: "Baily knew that teaching his students coding was a key pathway to opportunity in a job landscape that increasingly prioritizes and necessitates computing skills. So, he decided to take on the exciting challenge of creating and teaching the only coding class in the school and finding a solution that was affordable, responsive to feedback, and engaging to students of all learning abilities and backgrounds."
 #    teacher_quote: "When I got my hands on CodeCombat [and] started having my students use it, the light bulb went on. It was just night and day from every other program that we had used. They’re not even close."
 #    quote_attribution: "Scott Baily, Technology Teacher"
@@ -2710,6 +2728,7 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
     third_party_description: "CodeCombat користи следеће услуге других лица (између осталих):"
     cookies_message: "CodeCombat користи неколико основних и не-основних колачића."
     cookies_deny: "Одбиј не-основне колачиће"
+#    cookies_allow: "Allow cookies"
 
   ladder_prizes:
     title: "Турнирске награде" # This section was for an old tournament and doesn't need new translations now.
@@ -2936,7 +2955,7 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
 #    send: "Send Email"
 
 #  hoc_2018:
-#    banner: "Happy Computer Science Education Week 2018!"
+#    banner: "Welcome to Hour of Code 2019!"
 #    page_heading: "Your students will learn to code by building their own game!"
 #    step_1: "Step 1: Watch Video Overview"
 #    step_2: "Step 2: Try it Yourself"
@@ -2961,11 +2980,11 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
 #    point4: "✓ Project-based courses"
 #    point5: "✓ Student tracking"
 #    point6: "✓ Full lesson plans"
-#    title: "HOUR OF CODE 2018"
+#    title: "HOUR OF CODE 2019"
 #    acronym: "HOC"
 
 #  hoc_2018_interstitial:
-#    welcome: "Welcome to CodeCombat's Hour of Code 2018!"
+#    welcome: "Welcome to CodeCombat's Hour of Code 2019!"
 #    educator: "I'm an educator"
 #    show_resources: "Show me teacher resources!"
 #    student: "I'm a student"
@@ -3003,3 +3022,9 @@ module.exports = nativeDescription: "српски", englishDescription: "Serbian
 #    try_again: "Whoops, try again!"
 #    select_statement_left: "Whoops, select a statement from the left before hitting \"Submit.\""
 #    fill_boxes: "Whoops, make sure to fill all boxes before hitting \"Submit.\""
+
+#  browser_recommendation:
+#    title: "CodeCombat works best on Chrome!"
+#    pitch_body: "For the best CodeCombat experience we recommend using the latest version of Chrome. Download the latest version of chrome by clicking the button below!"
+#    download: "Download Chrome"
+#    ignore: "Ignore"

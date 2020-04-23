@@ -2,7 +2,9 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 
   new_home:
 #    title: "CodeCombat - Coding games to learn Python and JavaScript"
+#    meta_keywords: "CodeCombat, python, javascript, Coding Games"
 #    meta_description: "Learn typed code through a programming game. Learn Python, JavaScript, and HTML as you solve puzzles and learn to make your own coding games and websites."
+#    meta_og_url: "https://codecombat.com"
 #    built_for_teachers_title: "A Coding Game Built with Teachers in Mind"
 #    built_for_teachers_blurb: "Teaching kids to code can often feel overwhelming. CodeCombat helps all educators teach students how to code in either JavaScript or Python, two of the most popular programming languages. With a comprehensive curriculum that includes six computer science units and reinforces learning through project-based game development and web development units, kids will progress on a journey from basic syntax to recursion!"
 #    built_for_teachers_subtitle1: "Computer Science"
@@ -69,7 +71,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    global_title: "Join Our Global Community of Learners and Educators"
 #    global_subtitle1: "Learners"
 #    global_subtitle2: "Lines of Code"
-#    global_subtitle3: "Teachers"
+    global_subtitle3: "Вчителі"
 #    global_subtitle4: "Countries"
 #    go_to_my_classes: "Go to my classes"
 #    go_to_my_courses: "Go to my courses"
@@ -151,6 +153,13 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     want_coco: "Хочете CodeCombat у вашій школі?"
 #    educator: "Educator"
     student: "Учень"
+#    our_coding_programs: "Our Coding Programs"
+#    codecombat: "CodeCombat"
+#    ozaria: "Ozaria"
+#    codecombat_blurb: "Our original coding game. Recommended for parents, individuals, educators, and students who want to experience one of the most-loved coding games in the world."
+#    ozaria_blurb: "An adventure game and Computer Science program where students master the lost magic of coding to save their world. Recommended for educators and students."
+#    try_codecombat: "Try CodeCombat"
+#    try_ozaria: "Try Ozaria"
 
   nav:
 #    educators: "Educators"
@@ -195,6 +204,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     resource_hub: "Ресурси"
 #    apcsp: "AP CS Principles"
     parent: "Батьки"
+#    browser_recommendation: "For the best experience we recommend using the latest version of Chrome. Download the browser here!"
 
   modal:
     close: "Закрити"
@@ -981,6 +991,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     coffeescript_blurb: "Покращений синтаксис JavaScript."
     lua_blurb: "Мова ігрових сценаріїв."
     java_blurb: "(Тільки підписникам) Android та підприємства."
+#    cpp_blurb: "(Subscriber Only) Game development and high performance computing."
     status: "Статус"
     weapons: "Зброя"
     weapons_warrior: "Мечі – ближній бій, жодної магії"
@@ -1091,26 +1102,28 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    sean_title: "Senior Account Executive"
 #    liz_title: "Senior Account Executive"
 #    jane_title: "Account Executive"
-#    shan_title: "Partnership Development Lead, China"
-#    run_title: "Head of Operations, China"
-#    lance_title: "Software Engineer Intern, China"
+#    shan_title: "Head of Marketing, CodeCombat Greater China"
+#    run_title: "Head of Operations, CodeCombat Greater China"
+#    lance_title: "Head of Technology, CodeCombat Greater China"
+#    zhiran_title: "Head of Curriculum, CodeCombat Greater China"
+#    yuqiang_title: "Head of Innovation, CodeCombat Greater China"
 #    matias_title: "Senior Software Engineer"
 #    ryan_title: "Customer Support Specialist"
 #    maya_title: "Senior Curriculum Developer"
-#    bill_title: "General Manager, China"
+#    bill_title: "General Manager, CodeCombat Greater China"
 #    shasha_title: "Product and Visual Designer"
 #    daniela_title: "Marketing Manager"
 #    chelsea_title: "Operations Manager"
 #    claire_title: "Executive Assistant"
 #    bobby_title: "Game Designer"
-#    brian_title: "Lead Game Designer"
+#    brian_title: "Senior Game Design Manager"
 #    andrew_title: "Software Engineer"
 #    stephanie_title: "Customer Support Specialist"
 #    rob_title: "Sales Development Representative"
 #    shubhangi_title: "Senior Software Engineer"
-#    bryukh_title: "Gameplay Developer"
     retrostyle_title: "Ілюстрація"
     retrostyle_blurb: "RetroStyle Games"
+#    bryukh_title: "Gameplay Developer"
 #    bryukh_blurb: "Constructs puzzles"
     community_title: "...і наша open-source спільнота"
     community_subtitle: "Більше 500 помічників допомогли створити CodeCombat, і кожного тижня приєднуються нові!"
@@ -1252,6 +1265,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    referrer_web: "Google"
 #    referrer_other: "Other"
     anything_else: "Ще щось, про що нам варто знати?" # {change}
+#    anything_else_helper: ""
     thanks_header: "Запит отримано!"
     thanks_sub_header: "Дякуємо за ваш інтерес до CodeCombat для вашої школи."
     thanks_p: "Ми скоро з вами зв'яжемося! При потребі з нами можна зв'язатись тут:"
@@ -1357,7 +1371,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     maximize_editor: "Згортання/розширення редактора коду."
 
   cinematic:
-    click_anywhere_continue: "Клацніть будь-куди, щоб продовжити"
+    click_anywhere_continue: "клікніть будь-де, щоб продовжити"
 
   community:
     main_title: "Спільноти CodeCombat"
@@ -1442,7 +1456,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
   courses:
     create_new_class: "Створити новий клас"
 #    hoc_blurb1: "Try the"
-#    hoc_blurb2: "Code, Play, Share"
+    hoc_blurb2: "Програмуй, грай, ділись"
 #    hoc_blurb3: "activity! Construct four different minigames to learn the basics of game development, then make your own!"
 #    solutions_require_licenses: "Level solutions are available for teachers who have licenses."
     unnamed_class: "Безіменний клас"
@@ -1639,6 +1653,9 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    classes: "Classes"
 #    certificate_btn_print: "Print"
 #    certificate_btn_toggle: "Toggle"
+#    ask_next_course: "Want to play more? Ask your teacher for access to the next course."
+#    set_start_locked_level: "Set start locked level"
+#    no_level_limit: "No limit"
 
 #  project_gallery:
 #    no_projects_published: "Be the first to publish a project in this course!"
@@ -1979,7 +1996,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    combo_explanation: "Students pass Combo challenge levels by using at least one listed concept. Review student code by clicking the progress dot."
 #    concept: "Concept"
 #    sync_google_classroom: "Sync Google Classroom"
-#    try_ozaria_footer: "Try our new adventrue game, Ozaria!"
+#    try_ozaria_footer: "Try our new adventure game, Ozaria!"
 
 #  teacher_ozaria_encouragement_modal:
 #    title: "Build Computer Science Skills to Save Ozaria"
@@ -2001,6 +2018,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    teacher_not_found: "Teacher not found. Please make sure this teacher has already created a Teacher Account."
 #    teacher_not_valid: "This is not a valid Teacher Account. Only teacher accounts can share licenses."
 #    already_shared: "You've already shared these licenses with that teacher."
+#    have_not_shared: "You've not shared these licenses with that teacher."
 #    teachers_using_these: "Teachers who can access these licenses:"
 #    footer: "When teachers revoke licenses from students, the licenses will be returned to the shared pool for other teachers in this group to use."
 #    you: "(you)"
@@ -2322,7 +2340,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    certificate_stats: "Course Stats"
 #    certificate_lines_of: "lines of"
 #    certificate_levels_completed: "levels completed"
-#    certificate_for: "For"
+    certificate_for: "Для"
 #    certificate_number: "No."
 
   achievements:
@@ -2411,12 +2429,12 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     you_can2: "купити передплачений код"
     you_can3: "який може бути застосовано до вашої обліківки або переданий іншим."
 
-#  ozaria_chrome:
-#    sound_off: "Sound Off"
-#    sound_on: "Sound On"
-#    back_to_map: "Back to Map"
-#    level_options: "Level Options"
-#    restart_level: "Restart Level"
+  ozaria_chrome:
+    sound_off: "Вимкнути звук"
+    sound_on: "Увімкнути звук"
+    back_to_map: "Повернутись до мапи"
+    level_options: "Налаштування рівня"
+    restart_level: "Перезавантажити рівень"
 
 #  impact:
 #    hero_heading: "Building A World-Class Computer Science Program"
@@ -2441,8 +2459,8 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    fav_features: "Favorite Features"
 #    responsive_support: "Responsive Support"
 #    immediate_engagement: "Immediate Engagement"
-#    paragraph1: "Bobby Duke Middle School sits nestled between the \t    Southern California mountains of Coachella Valley to the west and east and the Salton Sea 33 miles south, and boasts a student population of 697 students within Coachella Valley Unified’s district-wide population of 18,861 students."
-#    paragraph2: "The students of Bobby Duke Middle School reflect the socioeconomic challenges facing Coachella Valley’s residents and students within the district. With over 95% of the Bobby Duke Middle School student population qualifying for free and reduced-price meals and over 40% classified as English language learners , the importance of teaching 21st century skills was the top priority of Bobby Duke Middle School Technology teacher, Scott Baily."
+#    paragraph1: "Bobby Duke Middle School sits nestled between the Southern California mountains of Coachella Valley to the west and east and the Salton Sea 33 miles south, and boasts a student population of 697 students within Coachella Valley Unified’s district-wide population of 18,861 students."
+#    paragraph2: "The students of Bobby Duke Middle School reflect the socioeconomic challenges facing Coachella Valley’s residents and students within the district. With over 95% of the Bobby Duke Middle School student population qualifying for free and reduced-price meals and over 40% classified as English language learners, the importance of teaching 21st century skills was the top priority of Bobby Duke Middle School Technology teacher, Scott Baily."
 #    paragraph3: "Baily knew that teaching his students coding was a key pathway to opportunity in a job landscape that increasingly prioritizes and necessitates computing skills. So, he decided to take on the exciting challenge of creating and teaching the only coding class in the school and finding a solution that was affordable, responsive to feedback, and engaging to students of all learning abilities and backgrounds."
 #    teacher_quote: "When I got my hands on CodeCombat [and] started having my students use it, the light bulb went on. It was just night and day from every other program that we had used. They’re not even close."
 #    quote_attribution: "Scott Baily, Technology Teacher"
@@ -2480,7 +2498,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     unauthorized: "Вам потрібно увійти. Ви вимкнули куки?"
     forbidden: "Недостатньо прав."
     forbidden_desc: "О ні, тут немає нічого що б ми могли вам показати! Перевірте, що ви зайшли під правильною обліківкою, або відвідайте одне з наступних посилань щоб повернутись до програмування!"
-#    user_not_found: "User Not Found"
+    user_not_found: "Користувач не знайден"
     not_found: "Не знайдено."
     not_found_desc: "Хм, тут нічого немає. Відвідайте одне з наступних посилань щоб повернутись до програмування!"
     not_allowed: "Недозволений метод."
@@ -2544,7 +2562,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     continue_statements: "Оператори продовження"
     dom_events: "Події DOM"
     dynamic_styling: "Динамічні стилі"
-#    events: "Events"
+    events: "Події"
     event_concurrency: "Конкурентність подій"
     event_data: "Дані подій"
     event_handlers: "Обробники подій"
@@ -2631,15 +2649,15 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     basic_event_handling: "Основи обробки подій"
     create_sharable_interactive_web_page: "Створи інтерактивну веб-сторінку, якою можна ділитися"
 
-#  anonymous_teacher:
-#    notify_teacher: "Notify Teacher"
-#    create_teacher_account: "Create free teacher account"
-#    enter_student_name: "Your name:"
-#    enter_teacher_email: "Your teacher's email:"
+  anonymous_teacher:
+    notify_teacher: "Повідомити вчителя"
+    create_teacher_account: "Створити безкоштовний акаунт вчителя"
+    enter_student_name: "Твоє ім'я:"
+    enter_teacher_email: "Електронна пошта твого вчителя:"
 #    teacher_email_placeholder: "teacher.email@example.com"
-#    student_name_placeholder: "type your name here"
-#    teachers_section: "Teachers:"
-#    students_section: "Students:"
+    student_name_placeholder: "напишіть своє ім'я тут"
+    teachers_section: "Вчителі:"
+    students_section: "Учні:"
 #    teacher_notified: "We've notified your teacher that you want to play more CodeCombat in your classroom!"
 
   delta:
@@ -2704,12 +2722,13 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     rights_clarification: "Для уточнення, будь-що що є доступним у редакторі рівнів, для створення нових рівнів, належить CC, тоді як зміст, створений редактором рівнів або завантажений у ході створення рівнів, не належить."
     nutshell_title: "Коротко"
     nutshell_description: "Будь-які ресурси, котрі ми надаємо в редакторі рівнів, є безкоштовними для використання за Вашим бажанням для створення рівнів. Але ми залишаємо за собою право обмежувати розповсюдження самих рівнів (котрі були створені на codecombat.com), тому в майбутньому за них може стягуватися плата, якщо в кінцевому результаті таке станеться."
-#    nutshell_see_also: "See also:"
+    nutshell_see_also: "Дивіться також:"
     canonical: "Англомовна версія цього документа є остаточною та канонічною версією. Якщо є будь-які невідповідності в перекладі, англійська версія документа є пріоритетною."
     third_party_title: "Сервіси сторонніх розробників"
     third_party_description: "CodeCombat використовує наступні сервіси сторонніх розробників (серед інших):"
 #    cookies_message: "CodeCombat uses a few essential and non-essential cookies."
 #    cookies_deny: "Decline non-essential cookies"
+#    cookies_allow: "Allow cookies"
 
   ladder_prizes:
     title: "Нагороди за турнір" # This section was for an old tournament and doesn't need new translations now.
@@ -2936,7 +2955,7 @@ module.exports = nativeDescription: "Українська", englishDescription: 
     send: "Надіслати E-mail"
 
 #  hoc_2018:
-#    banner: "Happy Computer Science Education Week 2018!"
+#    banner: "Welcome to Hour of Code 2019!"
 #    page_heading: "Your students will learn to code by building their own game!"
 #    step_1: "Step 1: Watch Video Overview"
 #    step_2: "Step 2: Try it Yourself"
@@ -2961,11 +2980,11 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    point4: "✓ Project-based courses"
 #    point5: "✓ Student tracking"
 #    point6: "✓ Full lesson plans"
-#    title: "HOUR OF CODE 2018"
+#    title: "HOUR OF CODE 2019"
 #    acronym: "HOC"
 
 #  hoc_2018_interstitial:
-#    welcome: "Welcome to CodeCombat's Hour of Code 2018!"
+#    welcome: "Welcome to CodeCombat's Hour of Code 2019!"
 #    educator: "I'm an educator"
 #    show_resources: "Show me teacher resources!"
 #    student: "I'm a student"
@@ -2985,10 +3004,10 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    title: "School Administrator Dashboard"
     my_teachers: "Мої вчителі"
     last_login: "Останній вхід"
-#    licenses_used: "licenses used"
-#    total_students: "total students"
+    licenses_used: "використані ліцензії"
+    total_students: "всього учнів"
     active_students: "активні учні"
-#    projects_created: "projects created"
+    projects_created: "створені проекти"
     other: "Інше"
 #    notice: "The following school administrators have view-only access to your classroom data:"
 #    add_additional_teacher: "Need to add an additional teacher? Contact your CodeCombat Account Manager or email support@codecombat.com. "
@@ -2996,10 +3015,16 @@ module.exports = nativeDescription: "Українська", englishDescription: 
 #    students_stat_description: "Total students accounts for all students across all classrooms, regardless of whether they have licenses applied."
 #    active_students_stat_description: "Active students counts the number of students that have logged into CodeCombat in the last 60 days."
 #    project_stat_description: "Projects created counts the total number of Game and Web development projects that have been created."
-#    no_teachers: "You are not administrating any teachers."
+    no_teachers: "Ви не адміністрували жодних вчителів."
 
   interactives:
     phenomenal_job: "Феноменальна робота!"
-    try_again: "Упс, спробуйте знову!"
+    try_again: "Упс, спробуй знову!"
 #    select_statement_left: "Whoops, select a statement from the left before hitting \"Submit.\""
 #    fill_boxes: "Whoops, make sure to fill all boxes before hitting \"Submit.\""
+
+#  browser_recommendation:
+#    title: "CodeCombat works best on Chrome!"
+#    pitch_body: "For the best CodeCombat experience we recommend using the latest version of Chrome. Download the latest version of chrome by clicking the button below!"
+#    download: "Download Chrome"
+#    ignore: "Ignore"

@@ -1,12 +1,14 @@
 import _ from 'lodash'
 const userSchema = require('schemas/models/user')
 const api = require('core/api')
+const utils = require('core/utils')
 
 const emptyUser = _.zipObject((_.keys(userSchema.properties).map((key) => [key, null])))
 
 export default {
   namespaced: true,
-  state: emptyUser,
+  state: _.cloneDeep(emptyUser),
+
   getters: {
     isAnonymous (state) { return state.anonymous === true },
 
@@ -41,7 +43,19 @@ export default {
     },
 
     preferredLocale (state) {
-      return state.preferredLanguage
+      return state.preferredLanguage || 'en-US'
+    },
+
+    inEU (state) {
+      if (!state.country) {
+        return undefined
+      }
+
+      return utils.inEU(state.country)
+    },
+
+    isSmokeTestUser (state) {
+      return utils.isSmokeTestEmail(state.email)
     }
   },
 
@@ -72,6 +86,10 @@ export default {
       commit('updateUser', { ozariaUserOptions:
         { ...ozariaConfig, avatar: { levelThangTypeId, cinematicThangTypeId } }
       })
+    },
+
+    authenticated ({ commit }, user) {
+      commit('updateUser', user)
     }
   }
 }

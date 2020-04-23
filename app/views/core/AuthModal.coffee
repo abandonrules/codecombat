@@ -55,7 +55,14 @@ module.exports = class AuthModal extends ModalView
     return forms.applyErrorsToForm(@$el, res.errors) unless res.valid
     new Promise(me.loginPasswordUser(userObject.emailOrUsername, userObject.password).then)
     .then(=>
-      if window.nextURL then window.location.href = window.nextURL else loginNavigate(@subModalContinue)
+      return application.tracker.identify()
+    )
+    .then(=>
+      application.tracker.identifyAfterNextPageLoad()
+      if window.nextURL
+        window.location.href = window.nextURL
+      else
+        loginNavigate(@subModalContinue)
     )
     .catch((jqxhr) =>
       showingError = false
@@ -89,7 +96,11 @@ module.exports = class AuthModal extends ModalView
             existingUser.fetchGPlusUser(gplusAttrs.gplusID, {
               success: =>
                 me.loginGPlusUser(gplusAttrs.gplusID, {
-                  success: => loginNavigate(@subModalContinue)
+                  success: =>
+                    application.tracker.identifyAfterNextPageLoad()
+                    application.tracker.identify().then(=>
+                      loginNavigate(@subModalContinue)
+                    )
                   error: @onGPlusLoginError
                 })
               error: @onGPlusLoginError
@@ -120,7 +131,11 @@ module.exports = class AuthModal extends ModalView
             existingUser.fetchFacebookUser(facebookAttrs.facebookID, {
               success: =>
                 me.loginFacebookUser(facebookAttrs.facebookID, {
-                  success: => loginNavigate(@subModalContinue)
+                  success: =>
+                    application.tracker.identifyAfterNextPageLoad()
+                    application.tracker.identify().then(=>
+                      loginNavigate(@subModalContinue)
+                    )
                   error: @onFacebookLoginError
                 })
               error: @onFacebookLoginError

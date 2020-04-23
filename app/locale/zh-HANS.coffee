@@ -1,8 +1,10 @@
 module.exports = nativeDescription: "简体中文", englishDescription: "Chinese (Simplified)", translation:
 
   new_home:
-#    title: "CodeCombat - Coding games to learn Python and JavaScript"
-#    meta_description: "Learn typed code through a programming game. Learn Python, JavaScript, and HTML as you solve puzzles and learn to make your own coding games and websites."
+    title: "扣哒世界|CodeCombat中国|AI世青赛|少儿编程等级认证"
+    meta_keywords: "扣哒世界, 青少年编程, 少儿编程, 信息学奥赛, CodeCombat官网,CodeCombat中文,游戏化编程,AI世青赛,信息学奥赛,奥佳睿,CodeCombat中国"
+    meta_description: "扣哒世界，CodeCombat中国唯一官方网站，支持Python, C++, JavaScript, 美国大学理事会（AP)认证，AI世青赛全球独家技术平台，支持中美信息学奥赛(NOI, CSP-J/S, USACO)、电子学会考试和国际青少年编程认证。"
+    meta_og_url: "https://koudashijie.com"
     built_for_teachers_title: "一个以教师为中心的课程体系"
     built_for_teachers_blurb: "教孩子们写代码往往会觉得无从下手。 CodeCombat 旨在帮助所有的教育工作者传授学生学习和掌握当下最流行的两种计算机语言，JavaScript 和 Python。整个体系包含六门计算机科学课程，以及通过基于项目的游戏开发和网页开发单元巩固学习，教会孩子们一步步从基本语法到高级递归前进！"
     built_for_teachers_subtitle1: "计算机科学"
@@ -151,6 +153,13 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     want_coco: "把 CodeCombat 带到您的学校？"
 #    educator: "Educator"
 #    student: "Student"
+#    our_coding_programs: "Our Coding Programs"
+#    codecombat: "CodeCombat"
+#    ozaria: "Ozaria"
+#    codecombat_blurb: "Our original coding game. Recommended for parents, individuals, educators, and students who want to experience one of the most-loved coding games in the world."
+#    ozaria_blurb: "An adventure game and Computer Science program where students master the lost magic of coding to save their world. Recommended for educators and students."
+#    try_codecombat: "Try CodeCombat"
+#    try_ozaria: "Try Ozaria"
 
   nav:
     educators: "教育者"
@@ -195,11 +204,12 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     resource_hub: "资源中心"
     apcsp: "AP计算机科学原理"
     parent: "家长参与"
+    browser_recommendation: "推荐使用 chrome 浏览器访问获取最佳体验，点击此处前往下载"
 
   modal:
     close: "关闭"
     okay: "是"
-#    cancel: "Cancel"
+    cancel: "取消"
 
   not_found:
     page_not_found: "找不到网页"
@@ -213,12 +223,12 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     subscribe_as_diplomat: "提交“外交官”申请"
 
   play:
-#    title: "Play CodeCombat Levels - Learn Python, JavaScript, and HTML"
-#    meta_description: "Learn programming with a coding game for beginners. Learn Python or JavaScript as you solve mazes, make your own games, and level up. Challenge your friends in multiplayer arena levels!"
-#    level_title: "__level__ - Learn to Code in Python, JavaScript, HTML"
-#    video_title: "__video__ | Video Level"
-#    game_development_title: "__level__ | Game Development"
-#    web_development_title: "__level__ | Web Development"
+    title: "挑战CodeCombat关卡 - 学习Python，Javascript和C++"
+    meta_description: "通过场景化教学学习输入真实的代码。 在解决难题的同时掌握Python，JavaScript和C++，并学习制作自己的代码游戏和网站，在多人竞技场挑战你的同学们"
+    level_title: "__level__ - 学习Python，Javascript和C++编程"
+    video_title: "__video__ | 观看教学视频"
+    game_development_title: "__level__ | 游戏开发"
+    web_development_title: "__level__ | 网页开发"
 #    anon_signup_title_1: "CodeCombat has a"
 #    anon_signup_title_2: "Classroom Version!"
 #    anon_signup_enter_code: "Enter Class Code:"
@@ -433,8 +443,8 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     books: "书籍"
 
   common:
-#    default_title: "CodeCombat - Coding games to learn Python and JavaScript"
-#    default_meta_description: "Learn typed code through a programming game. Learn Python, JavaScript, and HTML as you solve puzzles and learn to make your own coding games and websites."
+    default_title: "扣哒世界 - 在场景化编程中学习Python，Javascript和C++"
+    default_meta_description: "通过场景化教学学习输入真实的代码。 在解决难题的同时掌握Python，JavaScript和C++，并学习制作自己的代码游戏和网站。"
     back: "返回" # When used as an action verb, like "Navigate backward"
     coming_soon: "敬请期待！"
     continue: "继续" # When used as an action verb, like "Continue forward"
@@ -466,9 +476,9 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     submit_changes: "提交更新"
     save_changes: "保存更新"
     required_field: "必填" # {change}
-#    submit: "Submit"
-#    replay: "Replay"
-#    complete: "Complete"
+    submit: "提交"
+    replay: "重新开始"
+    complete: "完成"
 
   general:
     and: "与"
@@ -656,7 +666,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     tip_toggle_play: "用 Ctrl+P 来暂停或继续"
     tip_scrub_shortcut: "用 Ctrl+[ 和 Ctrl+] 来倒退和快进。"
     tip_guide_exists: "点击页面上方的指南, 可以获得更多有用信息。"
-    tip_open_source: "「CodeCombat」是100%开源的！" # {change}
+    tip_open_source: "「CodeCombat」青少年编程领导品牌！" # {change}
     tip_tell_friends: "喜欢Codecombat？那就赶快把它安利给朋友！"
     tip_beta_launch: "CodeCombat开始于2013的10月份。"
     tip_think_solution: "思考如何解决, 而不是思考问题。"
@@ -779,7 +789,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     goal_survive_time: "生存 __seconds__ 秒。"
     goal_defeat: "击败所有怪物。"
     goal_defeat_amount: "击败 __amount__ 个怪物。"
-    goal_move: "移动的所有的红X标记。"
+    goal_move: "移动到所有红X标记。"
     goal_collect: "收集所有物品。"
     goal_collect_amount: "收集 __amount__ 个物品。"
 
@@ -981,6 +991,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     coffeescript_blurb: "一种更好的JavaScript语法。"
     lua_blurb: "一种游戏脚本语言。"
     java_blurb: "(仅订阅用户) Android 和企业的选择。"
+#    cpp_blurb: "(Subscriber Only) Game development and high performance computing."
     status: "状态"
     weapons: "武器"
     weapons_warrior: "刀剑 - 近程物理攻击"
@@ -1063,8 +1074,8 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     editor_config_behaviors_description: "自动匹配括号、大括号和引号。"
 
   about:
-#    title: "About CodeCombat - Engaging Students, Empowering Teachers, Inspiring Creation"
-#    meta_description: "Our mission is to level computer science through game-based learning and make coding accessible to every learner. We believe programming is magic and want learners to be empowered to to create things from pure imagination."
+    title: "关于CodeCombat - 激发学生，赋能老师，释放创造力"
+    meta_description: "我们的愿景是通过基于场景化的学习来提高计算机科学水平，让世界上的每个人都能学习编程。 我们相信编程是充满魔力的，学习者能被赋予纯粹想象的创造力。"
     learn_more: "了解更多"
     main_title: "学习编程需要动手写大量代码"
     main_description: "CodeCombat让你带着微笑学习"
@@ -1091,26 +1102,28 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
 #    sean_title: "Senior Account Executive"
 #    liz_title: "Senior Account Executive"
 #    jane_title: "Account Executive"
-#    shan_title: "Partnership Development Lead, China"
-#    run_title: "Head of Operations, China"
-#    lance_title: "Software Engineer Intern, China"
+    shan_title: "首席营销官，CodeCombat 大中华区"
+    run_title: "首席运营官，CodeCombat 大中华区"
+    lance_title: "研发负责人，CodeCombat 大中华区"
+    zhiran_title: "课研负责人，CodeCombat 大中华区"
+    yuqiang_title: "创新负责人，CodeCombat 大中华区"
 #    matias_title: "Senior Software Engineer"
 #    ryan_title: "Customer Support Specialist"
 #    maya_title: "Senior Curriculum Developer"
-#    bill_title: "General Manager, China"
+    bill_title: "首席执行官，CodeCombat 大中华区"
 #    shasha_title: "Product and Visual Designer"
 #    daniela_title: "Marketing Manager"
 #    chelsea_title: "Operations Manager"
 #    claire_title: "Executive Assistant"
 #    bobby_title: "Game Designer"
-#    brian_title: "Lead Game Designer"
+#    brian_title: "Senior Game Design Manager"
 #    andrew_title: "Software Engineer"
 #    stephanie_title: "Customer Support Specialist"
 #    rob_title: "Sales Development Representative"
 #    shubhangi_title: "Senior Software Engineer"
-#    bryukh_title: "Gameplay Developer"
 #    retrostyle_title: "Illustration"
 #    retrostyle_blurb: "RetroStyle Games"
+#    bryukh_title: "Gameplay Developer"
     bryukh_blurb: "构建拼图"
     community_title: "...以及我们的开源社区"
     community_subtitle: "超过 450 个志愿者帮助我们建设 CodeCombat，每周都有新成员加入！" # {change}
@@ -1207,15 +1220,15 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
   teachers_quote:
     subtitle: "将 CodeCombat 带到您的班级、俱乐部、学校甚至地区！" # {change}
     email_exists: "使用该账号的电子邮箱"
-    phone_number: "电话号码"
-    phone_number_help: "工作日时我们在哪可以找到您？"
+    phone_number: "手机号码"
+    phone_number_help: "工作日我们如何找到您？"
     primary_role_label: "您的主要职业"
     role_default: "选择职业"
     primary_role_default: "（请选择）"
     purchaser_role_default: "（请选择）"
-    tech_coordinator: "技术负责人"
+    tech_coordinator: "其它"
     advisor: "顾问" # {change}
-    principal: "校长"
+    principal: "学校/机构"
     superintendent: "主管"
     parent: "家长"
     purchaser_role_label: "您的采购员角色"
@@ -1224,13 +1237,13 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     approve_funds: "批准资金"
     no_purchaser_role: "不参与购买决策"
     district_label: "地区"
-    district_name: "区"
+    district_name: "区/县"
     district_na: "不可用时请输入 N/A"
     organization_label: "学校："
-    school_name: "学校名称"
-    city: "城市"
-    state: "省" # {change}
-    country: "国家"
+    school_name: "学校或机构名称"
+    city: "市（直辖市可填无）"
+    state: "省/直辖市" # {change}
+    country: "国家/地区"
     num_students_help: "您估计有多少学生加入CodeCombat？" # {change}
     num_students_default: "选择数量范围"
     education_level_label: "学生的教育程度"
@@ -1243,15 +1256,16 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     referrer: "您是怎么知道我们的？"
 #    referrer_help: "For example: from another teacher, a conference, your students, Code.org, etc."
     referrer_default: "选择一个"
-#    referrer_conference: "Conference (e.g. ISTE)"
-    referrer_hoc: "Code.org/Hour of Code"
+    referrer_conference: "展会"
+    referrer_hoc: "比赛"
     referrer_teacher: "老师"
-    referrer_admin: "管理员"
+    referrer_admin: "百度"
     referrer_student: "学生"
-    referrer_pd: "专业培训/讲习班"
-    referrer_web: "Google"
+    referrer_pd: "知乎"
+    referrer_web: "家长"
     referrer_other: "其他"
     anything_else: "您还有什么建议？" # {change}
+    anything_else_helper: "也可留下您的微信号，我们会为您提供更多帮助"
     thanks_header: "申请已发送！"
     thanks_sub_header: "感谢您为您的学校表达对 CodeCombat 的兴趣。"
     thanks_p: "我们不久会和你联系！如果想和我们取得联系，可以通过以下方式："
@@ -1266,7 +1280,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     create_account_subtitle: "在 CodeCombat 班级中使用老师专用工具。 <strong>创建班级</strong>添加学生、<strong>观察学生进度</strong>！"
     convert_account_title: "升级为老师账号"
     not: "不是"
-#    full_name_required: "First and last name required"
+    full_name_required: "姓和名是必填项"
 
   versions:
     save_version_title: "保存新版本"
@@ -1356,8 +1370,8 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     beautify: "利用标准编码格式美化您的代码。"
     maximize_editor: "最大化/最小化代码编辑器"
 
-#  cinematic:
-#    click_anywhere_continue: "click anywhere to continue"
+  cinematic:
+    click_anywhere_continue: "点击任意区域继续"
 
   community:
     main_title: "CodeCombat社区"
@@ -1639,6 +1653,9 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     classes: "班级"
     certificate_btn_print: "打印"
     certificate_btn_toggle: "中英切换"
+    ask_next_course: "想继续学习下一个课程？请联系老师或家长获取帮助"
+    set_start_locked_level: "设置要锁定的起始关卡"
+    no_level_limit: "无限制"
 
   project_gallery:
     no_projects_published: "成为第一个在这个课程中发布项目的人吧！"
@@ -1979,18 +1996,18 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     combo_explanation: "学生至少使用一个列出的概念组合来挑战关卡，点击进度点查看学生代码。"
     concept: "概念"
     sync_google_classroom: "同步谷歌教室"
-#    try_ozaria_footer: "Try our new adventrue game, Ozaria!"
+    try_ozaria_footer: "试试我们的新产品：奥佳睿！"
 
-#  teacher_ozaria_encouragement_modal:
-#    title: "Build Computer Science Skills to Save Ozaria"
-#    sub_title: "You are invited to try the new adventure game from CodeCombat"
-#    cancel: "Back to CodeCombat"
-#    accept: "Try First Unit Free"
-#    bullet1: "Deepen student connection to learning through an epic story and immersive gameplay"
-#    bullet2: "Teach CS fundamentals, Python or JavaScript and 21st century skills"
-#    bullet3: "Unlock creativity through capstone projects"
-#    bullet4: "Support instructions through dedicated curriculum resources"
-#    you_can_return: "You can always return to CodeCombat"
+  teacher_ozaria_encouragement_modal:
+    title: "学习计算机科学技能，拯救奥佳睿世界"
+    sub_title: "邀请您体验 CodeCombat 出品的最新冒险编程产品"
+    cancel: "返回 CodeCombat"
+    accept: "免费试用序章"
+    bullet1: "通过宏大故事和沉浸式游戏加深学生与学习的联系"
+    bullet2: "教授计算机科学的基本概念，Python 或者 JavaScript，以及 21 世纪所需的技能"
+    bullet3: "在顶点项目释放创意"
+    bullet4: "提供教研资料指导"
+    you_can_return: "您可以随时回到 CodeCombat"
 
   share_licenses:
     share_licenses: "分配许可"
@@ -2001,6 +2018,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     teacher_not_found: "没有找到教室。请确保教室已经创建了一个教师账户。"
     teacher_not_valid: "该教师账户无效，只有教师账户可以分享许可证。"
     already_shared: "成功分享许可证给教师。"
+#    have_not_shared: "You've not shared these licenses with that teacher."
 #    teachers_using_these: "Teachers who can access these licenses:"
 #    footer: "When teachers revoke licenses from students, the licenses will be returned to the shared pool for other teachers in this group to use."
     you: "（您）"
@@ -2296,7 +2314,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     live_tournament: "最近的比赛"
     awaiting_tournament_title: "比赛未开始"
     awaiting_tournament_blurb: "比赛将于6月22日下午开启，敬请期待"
-    tournament_end_desc: "比赛已结束，感谢您的参与"
+    tournament_end_desc: "比赛暂未开放"
 
   user:
 #    user_title: "__name__ - Learn to Code with CodeCombat"
@@ -2338,12 +2356,12 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     left_xp_postfix: ""
 
   account:
-#    title: "Account"
-#    settings_title: "Account Settings"
-#    unsubscribe_title: "Unsubscribe"
-#    payments_title: "Payments"
-#    subscription_title: "Subscription"
-#    invoices_title: "Invoices"
+    title: "账户"
+    settings_title: "账户设置"
+    unsubscribe_title: "取消订阅"
+    payments_title: "支付"
+    subscription_title: "订阅"
+    invoices_title: "发票"
 #    prepaids_title: "Prepaids"
     payments: "支付方式"
     prepaid_codes: "预付费码"
@@ -2411,12 +2429,12 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     you_can2: "购买一个预购码"
     you_can3: "使用在您的账户或者给其他人。"
 
-#  ozaria_chrome:
-#    sound_off: "Sound Off"
-#    sound_on: "Sound On"
-#    back_to_map: "Back to Map"
-#    level_options: "Level Options"
-#    restart_level: "Restart Level"
+  ozaria_chrome:
+    sound_off: "关闭声音"
+    sound_on: "开启声音"
+    back_to_map: "返回地图"
+    level_options: "关卡选项"
+    restart_level: "重新开始这个关卡"
 
   impact:
     hero_heading: "创建世界一流的计算机科学课程"
@@ -2518,8 +2536,8 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     arithmetic: "四则运算"
     array_2d: "二维数组"
     array_index: "数组下标"
-#    array_iterating: "Iterating Over Arrays"
-#    array_literals: "Array Literals"
+    array_iterating: "数组迭代"
+    array_literals: "数组字面量"
     array_searching: "数组遍历"
     array_sorting: "数组排序"
     arrays: "数组"
@@ -2559,7 +2577,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     game_goals: "游戏目标"
 #    game_spawn: "Game Spawn"
     graphics: "图形"
-#    graphs: "Graphs"
+    graphs: "图"
     heaps: "堆"
     if_condition: "If条件语句"
     if_else_if: "If/Else If语句"
@@ -2580,7 +2598,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     jquery_selectors: "jQuery选择器"
     length: "数组长度"
 #    math_coordinates: "Coordinate Math"
-#    math_geometry: "Geometry"
+    math_geometry: "几何"
     math_operations: "数学程序库操作"
 #    math_proportions: "Proportion Math"
 #    math_trigonometry: "Trigonometry"
@@ -2605,7 +2623,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     while_condition_loops: "使用条件语句的While循环"
     while_loops_simple: "While循环"
     while_loops_nested: "While嵌套循环"
-#    xy_coordinates: "Coordinate Pairs"
+    xy_coordinates: "坐标对"
     advanced_strings: "高级字符串" # Rest of concepts are deprecated
     algorithms: "算法"
     boolean_logic: "布尔逻辑"
@@ -2710,6 +2728,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     third_party_description: "CodeCombat使用了下列第三方服务（除了别的以外）："
     cookies_message: "CodeCombat使用了必要和非必要的cookies."
     cookies_deny: "禁用非必要的cookies"
+#    cookies_allow: "Allow cookies"
 
   ladder_prizes:
     title: "竞标赛奖项" # This section was for an old tournament and doesn't need new translations now.
@@ -2936,7 +2955,7 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     send: "发送邮件"
 
   hoc_2018:
-#    banner: "Happy Computer Science Education Week 2018!"
+#    banner: "Welcome to Hour of Code 2019!"
     page_heading: "教你的学生如何建立自己的街机游戏!" # {change}
 #    step_1: "Step 1: Watch Video Overview"
 #    step_2: "Step 2: Try it Yourself"
@@ -2961,11 +2980,11 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
     point4: "✓ 基于项目的课程"
     point5: "✓ 学生追踪"
     point6: "✓ 全部课程计划"
-#    title: "HOUR OF CODE 2018"
+#    title: "HOUR OF CODE 2019"
 #    acronym: "HOC"
 
 #  hoc_2018_interstitial:
-#    welcome: "Welcome to CodeCombat's Hour of Code 2018!"
+#    welcome: "Welcome to CodeCombat's Hour of Code 2019!"
 #    educator: "I'm an educator"
 #    show_resources: "Show me teacher resources!"
 #    student: "I'm a student"
@@ -3003,3 +3022,9 @@ module.exports = nativeDescription: "简体中文", englishDescription: "Chinese
 #    try_again: "Whoops, try again!"
 #    select_statement_left: "Whoops, select a statement from the left before hitting \"Submit.\""
 #    fill_boxes: "Whoops, make sure to fill all boxes before hitting \"Submit.\""
+
+  browser_recommendation:
+#    title: "CodeCombat works best on Chrome!"
+    pitch_body: "为保证 CodeCombat 的所有功能正常运行，建议使用 Chrome 浏览器进行学习。"
+    download: "下载 CHROME 浏览器"
+    ignore: "忽略"

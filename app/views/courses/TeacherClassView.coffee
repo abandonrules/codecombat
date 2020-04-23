@@ -62,6 +62,9 @@ module.exports = class TeacherClassView extends RootView
     'change .course-select, .bulk-course-select': 'onChangeCourseSelect'
     'click a.student-level-progress-dot': 'onClickStudentProgressDot'
     'click .sync-google-classroom-btn': 'onClickSyncGoogleClassroom'
+    'change .locked-level-select': 'onChangeLockedLevelSelect'
+    'click .student-details-row': 'trackClickEvent'
+    'click .open-certificate-btn': 'trackClickEvent'
 
   getInitialState: ->
     {
@@ -87,6 +90,7 @@ module.exports = class TeacherClassView extends RootView
 
   initialize: (options, classroomID) ->
     super(options)
+    @utils = utils
 
     if (options.renderOnlyContent)
       @template = viewContentTemplate
@@ -127,6 +131,7 @@ module.exports = class TeacherClassView extends RootView
     @listenTo @classroom, 'sync', ->
       @fetchStudents()
       @fetchSessions()
+      @classroom.language = @classroom.get('aceConfig')?.language
 
     @students.comparator = (student1, student2) =>
       dir = @state.get('sortDirection')
@@ -152,6 +157,8 @@ module.exports = class TeacherClassView extends RootView
     @courses = new Courses()
     @supermodel.trackRequest @courses.fetch()
 
+    @campaignLevelNumberMap = {}
+
     @courseInstances = new CourseInstances()
     @supermodel.trackRequest @courseInstances.fetchForClassroom(classroomID)
 
@@ -160,6 +167,7 @@ module.exports = class TeacherClassView extends RootView
     me.getClientCreatorPermissions()?.then(() => @debouncedRender?())
     @attachMediatorEvents()
     window.tracker?.trackEvent 'Teachers Class Loaded', category: 'Teachers', classroomID: @classroom.id, ['Mixpanel']
+    @timeSpentOnUnitProgress = null
 
   fetchStudents: ->
     Promise.all(@students.fetchForClassroom(@classroom, {removeDeleted: true, data: {project: 'firstName,lastName,name,email,coursePrepaid,coursePrepaidID,deleted'}}))
@@ -210,6 +218,8 @@ module.exports = class TeacherClassView extends RootView
       @state.set students: @students
     @listenTo @, 'course-select:change', ({ selectedCourse }) ->
       @state.set selectedCourse: selectedCourse
+    @listenTo @, 'locked-level-select:change', ({ selectedLevel }) ->
+      @setSelectedCourseLockedLevel(selectedLevel)
     @listenTo @state, 'change:selectedCourse', (e) ->
       @setSelectedCourseInstance()
 
@@ -225,6 +235,18 @@ module.exports = class TeacherClassView extends RootView
       @state.set 'selectedCourseInstance', @courseInstances.findWhere courseID: selectedCourse.id, classroomID: @classroom.id
     else if @state.get 'selectedCourseInstance'
       @state.set 'selectedCourseInstance', null
+
+  getSelectedCourseInstance: ->
+    unless @state.get 'selectedCourseInstance'
+      @setSelectedCourseInstance()
+    return @state.get 'selectedCourseInstance'
+
+  setSelectedCourseLockedLevel: (level) ->
+    return unless me.showCourseProgressControl()
+    courseInstance = @getSelectedCourseInstance()
+    if courseInstance and level
+      courseInstance.set 'startLockedLevel', level
+      courseInstance.save()
 
   onLoaded: ->
     # Get latest courses for student assignment dropdowns
@@ -242,6 +264,11 @@ module.exports = class TeacherClassView extends RootView
         @debouncedRender()
     @listenTo @students, 'sort', @debouncedRender
     @getCourseAssessmentPairs()
+
+    @courses.models.forEach (course) =>
+      levels = @classroom.getLevels({courseID: course.id}).models.map (level) =>
+        key: level.get('original'), practice: level.get('practice') ? false, assessment: level.get('assessment') ? false
+      @campaignLevelNumberMap[course.get('campaignID')] = utils.createLevelNumberMap(levels)
     super()
 
   afterRender: ->
@@ -285,12 +312,14 @@ module.exports = class TeacherClassView extends RootView
           opacity: 1
         }
       })
-    $('.progress-dot, .btn-view-project-level').each (i, el) ->
-      dot = $(el)
-      dot.tooltip({
+
+    $('.has-tooltip').off('mouseenter')
+    $('.has-tooltip').mouseenter () ->
+      $(this).tooltip({
         html: true
-      }).delegate '.tooltip', 'mousemove', ->
-        dot.tooltip('hide')
+      })
+      $(this).tooltip('show')
+
 
   allStatsLoaded: ->
     @classroom?.loaded and @classroom?.get('members')?.length is 0 or (@students?.loaded and @classroom?.sessions?.loaded)
@@ -323,6 +352,17 @@ module.exports = class TeacherClassView extends RootView
       classStats: @calculateClassStats()
     }
 
+  destroy: ->
+    @trackTimeSpentOnUnitProgress()
+    super()
+
+  trackTimeSpentOnUnitProgress: ->
+    if @startTimeOnUnitProgress and !@timeSpentOnUnitProgress
+      @timeSpentOnUnitProgress = new Date() - @startTimeOnUnitProgress
+    if @timeSpentOnUnitProgress
+      application.tracker?.trackTiming @timeSpentOnUnitProgress, 'Teachers Time Spent', 'Unit Progress Tab', me.id
+      @timeSpentOnUnitProgress = ''
+
   getCourseAssessmentPairs: () ->
     @courseAssessmentPairs = []
     for course in @courses.models
@@ -336,13 +376,24 @@ module.exports = class TeacherClassView extends RootView
     hash = $(e.target).closest('a').attr('href')
     if hash isnt window.location.hash
       tab = hash.slice(1)
-      window.tracker?.trackEvent 'Teachers Class Switch Tab', { category: 'Teachers', classroomID: @classroom.id, tab }, ['Mixpanel']
+      window.tracker?.trackEvent 'Teachers Class Switch Tab', { category: 'Teachers', classroomID: @classroom.id, tab, label: tab }, ['Mixpanel']
     @updateHash(hash)
     @state.set activeTab: hash
 
   updateHash: (hash) ->
     return if application.testing
     window.location.hash = hash
+    if hash == '#course-progress-tab' and !@startTimeOnUnitProgress
+      @startTimeOnUnitProgress = new Date()
+    else if @startTimeOnUnitProgress
+      @timeSpentOnUnitProgress = new Date() - @startTimeOnUnitProgress
+      @startTimeOnUnitProgress = null
+      @trackTimeSpentOnUnitProgress()
+
+  trackClickEvent: (e) ->
+    eventAction = $(e.currentTarget).data('event-action')
+    if eventAction
+      window.tracker?.trackEvent eventAction, { category: 'Teachers', label: @classroom.id }
 
   onClickCopyCodeButton: ->
     window.tracker?.trackEvent 'Teachers Class Copy Class Code', category: 'Teachers', classroomID: @classroom.id, classCode: @state.get('classCode'), ['Mixpanel']
@@ -423,6 +474,9 @@ module.exports = class TeacherClassView extends RootView
 
   onChangeCourseSelect: (e) ->
     @trigger 'course-select:change', { selectedCourse: @courses.get($(e.currentTarget).val()) }
+
+  onChangeLockedLevelSelect: (e) ->
+    @trigger 'locked-level-select:change', { selectedLevel: $(e.currentTarget).val() }
 
   getSelectedStudentIDs: ->
     Object.keys(_.pick @state.get('checkboxStates'), (checked) -> checked)
