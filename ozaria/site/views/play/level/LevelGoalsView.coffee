@@ -1,6 +1,6 @@
 require('ozaria/site/styles/play/level/goals.sass')
 CocoView = require 'views/core/CocoView'
-template = require 'ozaria/site/templates/play/level/goals.jade'
+template = require 'app/templates/play/level/goals'
 {me} = require 'core/auth'
 utils = require 'core/utils'
 LevelSession = require 'models/LevelSession'
@@ -17,11 +17,12 @@ module.exports = class LevelGoalsView extends CocoView
   subscriptions:
     'goal-manager:new-goal-states': 'onNewGoalStates'
     'tome:cast-spells': 'onTomeCast'
+    'level:gather-chat-message-context': 'onGatherChatMessageContext'
 
   constructor: (options) ->
     super options
     @level = options.level
-    
+
   afterRender: ->
     @levelGoalsComponent = new LevelGoals({
       el: @$('.goals-component')[0],
@@ -30,7 +31,7 @@ module.exports = class LevelGoalsView extends CocoView
     })
 
   onNewGoalStates: (e) ->
-    _.assign(@levelGoalsComponent, _.pick(e, 'overallStatus', 'timedOut', 'goals', 'goalStates'))
+    _.assign(@levelGoalsComponent, _.pick(e, 'overallStatus', 'timedOut', 'goals', 'goalStates', 'capstoneStage'))
     @levelGoalsComponent.casting = false
 
     @previousGoalStatus ?= {}
@@ -44,3 +45,26 @@ module.exports = class LevelGoalsView extends CocoView
   onTomeCast: (e) ->
     return if e.preload
     @levelGoalsComponent.casting = true
+
+  destroy: ->
+    silentStore = { commit: _.noop, dispatch: _.noop }
+    @levelGoalsComponent?.$destroy()
+    @levelGoalsComponent?.$store = silentStore
+    super()
+
+  onGatherChatMessageContext: (e) ->
+    context = e.chat.context
+    context.goalStates = {}
+    for goal in @levelGoalsComponent.goals
+      continue if goal.optional or (goal.team and goal.team isnt me.team)
+      goalState = @levelGoalsComponent.goalStates[goal.id]
+      context.goalStates[goal.id] = name: goal.name, status: goalState?.status or 'incomplete'
+      if e.chat.example
+        # Add translation info, for generating permutations
+        context.goalStates[goal.id].i18n = _.cloneDeep(goal.i18n ? {})
+      else
+        # Bake the translation in
+        context.goalStates[goal.id].name = utils.i18n @goal, 'name'
+        statusKey = { success: 'success', failure: 'failing', incomplete: 'incomplete' }[context.goalStates[goal.id].status]
+        context.goalStates[goal.id].status = $.i18n.t("play_level.#{statusKey}")
+    null

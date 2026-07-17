@@ -1,13 +1,12 @@
 /*!
  * jaba
  * 
- * Compiled: Wed Oct 30 2019 20:06:05 GMT-0700 (PDT)
+ * Compiled: Tue Jun 30 2026 18:11:16 GMT+0800 (China Standard Time)
  * Target  : web (umd)
  * Profile : modern
- * Version : 0d3b993-dirty
+ * Version : 504110d-dirty
  * 
  * 
- * Private
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -147,7 +146,7 @@ let plugin = module.exports = {
 	name: 'lang-java',
 	parser: parser,
 	init: function(esper) {
-		//esper.plugin('babylon');
+		esper.plugin('babylon');
 		esper.languages.java = plugin;
 	},
 	setupEngine: function(esper, engine) {
@@ -185,7 +184,7 @@ function skope(node) {
 
 	function process(node, parent) {
 		let next = (n) => process(n, node);
-		if ( !node.loc ) {
+		if ( !node.loc && node.node != "LineEmpty" && node.node != "TraditionalComment" ) {
 			console.log("Node of type `" + node.node + "` doesn't have loc.");
 		}
 		switch (node.node) {
@@ -216,6 +215,8 @@ function skope(node) {
 				methods.push(node);
 				next(node.body);
 				methods.pop();
+				return;
+			case "Global":
 				return;
 			case "FieldDeclaration":
 				for ( let frag of node.fragments ) {
@@ -267,16 +268,20 @@ function skope(node) {
 				for ( let frag of node.fragments ) {
 					scope[frag.name.identifier] = {node: node, type: node.type, kind: "Local"}
 				}
+				node.scope = scope;
 				break;
 			case "ReturnStatement":
 				node.bindType = methods[methods.length-1].returnType2;
-				next(node.expression);
+				node.scope = scope;
+				if ( node.expression ) next(node.expression);
 				break;
 			case "SuperConstructorInvocation":
 				node.refClass = classes[classes.length-1];
+				node.scope = scope;
 				if ( node.expression ) next(node.expression);
 				node.arguments.map(next);
 				break;
+			case "ArrayInitializer":
 			case "SingleVariableDeclaration":
 			case "ArrayAccess":
 			case "ClassInstanceCreation":
@@ -302,6 +307,11 @@ function skope(node) {
 			case "AssertStatement":
 			case "EnhancedForStatement":
 			case "MethodReference":
+			case "FieldAccess":
+			case "TypeDeclarationStatement":
+			case "EmptyStatement":
+			case "InitializerList":
+			case "ThisExpression":
 
 				for ( var k in node ) {
 					if ( node[k] && node[k].node ) next(node[k]);
@@ -321,7 +331,10 @@ function skope(node) {
 
 
 function transpile(code, options) {
-	let iast = parser.parse(code, options);
+	let tcode = code.replace(/\/\*.*?\*\//g, function(m) {
+		return new Array(m.length - 1).join(' ');
+	})
+	let iast = parser.parse(tcode, options);
 	skope(iast);
 	let r = transform(iast)
 	//let src = generate(r).code;
@@ -354,7 +367,9 @@ module.exports = {transform:"redacted"};
 var esper = __webpack_require__(1);
 var Value = esper.Value;
 let stdlib = __webpack_require__(7);
+var ArrayValue = esper.ArrayValue
 let debug = () => {}
+
 
 class JavaPrimitiveValue extends esper.PrimitiveValue {
 	constructor(value) {
@@ -362,9 +377,11 @@ class JavaPrimitiveValue extends esper.PrimitiveValue {
 	}
 
 	derivePrototype(realm) {
-		if ( this.boundType == "int" ) return realm.globalScope.get('Integer');
-		if ( this.boundType == "double" ) return realm.globalScope.get('Double');
-		if ( this.boundType == "string" ) return realm.globalScope.get('JavaString');
+		if(['cpp', 'java'].indexOf(realm.options.language) != -1){
+			if ( this.boundType == "int" ) return realm.globalScope.get('Integer');
+			if ( this.boundType == "double" ) return realm.globalScope.get('Double');
+			if ( this.boundType == "string" ) return realm.globalScope.get('JavaString');
+		}
 
 		return super.derivePrototype(realm);
 	}
@@ -386,7 +403,8 @@ class JavaPrimitiveValue extends esper.PrimitiveValue {
 	}
 
 	*add(other) {
-		if ( !this.boundType || this.boundType == "string"  ) return yield * super.add(other);
+		if ( !this.boundType ) return yield * super.add(other);
+		if ( this.boundType == "string" ) return yield * esper.StringValue.prototype.add.call(this, other);
 		let n = new JavaPrimitiveValue(this.native + (yield * other.toPrimitiveNative()), this.realm);
 		n.boundType = this.boundType;
 		return n;
@@ -440,58 +458,90 @@ class JavaCast extends esper.ObjectValue {
 		debug("CAST", args[1], "to", args[0].toNative());
 		if ( args[0].jsTypeName == "undefined" ) return args[1];
 		let t = args[0].toNative();
-		if ( t == "var" ) return args[1];
+		if ( t == "var" || t == "auto" ) return args[1];
+		if ( t == "String" ) t = "string";
 		if ( t == "int" || t == "double" || t == "string" || t == "bool" ) {
 			let val = args[1].toNative();
 			let out = new JavaPrimitiveValue(val);
 			out.boundType = t;
 			return out;
 		}
-
+		debug("CAST FAILED", t);
 		return args[1];
 	}
 }
 
 function javaifyEngine(ev) {
+	// Value.fromPrimativeNative wont refresh when every call of javaifyEngine
+	let rim = ev.realm.import.bind(ev.realm)
+	ev.realm.import = (v, m) => {
+		if ( v instanceof Value ) return v;
+		if ( v === undefined ) return Value.undef;
+
+		if(['cpp', 'java'].indexOf(ev.realm.options.language) != -1) {
+			let type = typeof(v)
+			let r = new JavaPrimitiveValue(v);
+			if (type == "int") {
+				r.boundType = "int";
+				return r;
+			}
+			if ( type == "double" ) {
+				r.boundType = "double";
+				return r;
+			}
+
+			if ( type == "string" ) {
+				r.boundType = "string";
+				return r;
+			}
+
+			if ( type == "number" ) {
+				r.boundType = "double";
+				return r;
+			}
+		}
+		return rim(v, m)
+	}
+	// ev.realm.fromNative refreshed when every call of javaifyEngine
 	let rev = ev.realm.fromNative.bind(ev.realm);
 	ev.realm.fromNative = (v,n) => {
-		let r = new JavaPrimitiveValue(v);
-		r.realm = ev.realm;
-		let type = typeof(v);
-		if ( typeof(n) == 'string' ) type = n;
+		if(['cpp', 'java'].indexOf(ev.realm.options.language) != -1) {
+			let r = new JavaPrimitiveValue(v);
+			r.realm = ev.realm;
+			let type = typeof(v);
+			if ( typeof(n) == 'string' ) type = n;
 
-		if ( typeof(n) == 'object' ) {
-			if ( typeof(n.value) == "number" || n.type == "NumericLiteral" ) {
-				let raw = n.raw;
-				if ( raw && raw.indexOf(".") == -1 ) r.boundType = "int";
-				else r.boundType = "double";
-			} else if ( typeof(n.value) == "string" ) { 
-				r.boundType = "string";
+			if ( typeof(n) == 'object' ) {
+				if ( typeof(n.value) == "number" || n.type == "NumericLiteral" ) {
+					let raw = n.raw;
+					if ( raw && raw.indexOf(".") == -1 ) r.boundType = "int";
+					else r.boundType = "double";
+				} else if ( typeof(n.value) == "string" ) { 
+					r.boundType = "string";
+				}
+				return r;
 			}
-			return r;
-		}
-		
-		if ( type == "int" ) {
-			r.boundType = "int";
-			return r;
-		}
 
-		if ( type == "double" ) {
-			r.boundType = "double";
-			return r;
-		}
+			if ( type == "int" ) {
+				r.boundType = "int";
+				return r;
+			}
 
-		if ( type == "string" ) {
-			r.boundType = "string";
-			return r;
-		}
+			if ( type == "double" ) {
+				r.boundType = "double";
+				return r;
+			}
 
-		if ( type == "number" ) {
-			r.boundType = "double";
-			return r;
+			if ( type == "string" ) {
+				r.boundType = "string";
+				return r;
+			}
+
+			if ( type == "number" ) {
+				r.boundType = "double";
+				return r;
+			}
 		}
-		//console.log("Failed binding native", v, new Error().stack)
-		
 		return rev(v);
 	}
 	ev.addGlobal('cashew', {
@@ -519,6 +569,41 @@ function javaifyEngine(ev) {
 		obj.setImmediate("prototype", ptype);
 		ev.realm.globalScope.add(k, obj);
 	}
+	ev.realm.CPPListProto = new stdlib.p.CPPListProto(ev.realm)
+
+	// ArrayValue.make wont refresh when every call of javaifyEngine
+	if(!ArrayValue.convertedMake) {
+		let amake = ArrayValue.make.bind(ArrayValue);
+		ArrayValue.make = function(vals, realm) {
+			if(realm.options.language == 'cpp') {
+				let av = amake(vals, realm);
+				av.setPrototype(ev.realm.CPPListProto);
+
+				let l = vals.length
+				if(l > 0) {av.setImmediate('x', vals[0]); av.properties.x.enumerable = false;}
+				if(l > 1) {av.setImmediate('y', vals[1]); av.properties.y.enumerable = false;}
+				if(l > 2) {av.setImmediate('z', vals[2]); av.properties.z.enumerable = false;}
+				return av;
+			}
+			else {
+				return amake(vals, realm);
+			}
+		}
+		ArrayValue.convertedMake = true;
+	}
+
+	ev.addGlobal("tolower", (char) => {
+		if(typeof char !== 'string' || char.length > 1) {
+			throw SyntaxError('arg1 only accept char type.')
+		}
+		return char.toLowerCase()
+	})
+	ev.addGlobal('toupper', (char) => {
+		if(typeof char !== 'string' || char.length > 1) {
+			throw SyntaxError('arg1 only accept char type.')
+		}
+		return char.toUpperCase()
+	})
 }
 
 module.exports = {
@@ -534,8 +619,12 @@ module.exports = {
 
 var esper = __webpack_require__(1);
 let EasyObjectValue = esper.EasyObjectValue;
+let EasyNativeFunction = esper.EasyNativeFunction
+let ArrayValue = esper.ArrayValue;
+let CompletionRecord = esper.CompletionRecord;
 let Value = esper.Value;
 let debug = () => {};
+
 
 class JavaObject extends EasyObjectValue {
 	static *equals(thiz, args) {
@@ -548,10 +637,20 @@ class JavaObject extends EasyObjectValue {
 }
 
 class JavaString extends EasyObjectValue {
+	*get(name, thiz) {
+		let idx = Number(name);
+		if ( !isNaN(idx) ) {
+			return Value.fromNative(thiz.native[idx]);
+		}
+		return yield * super.get(name, thiz);
+	}
 	static *equals(o) {
 		return this.serial == o.serial;
 	}
 	static *length$(thiz, argz, s) { 
+		return s.fromNative(thiz.native.length, 'int'); 
+	}
+	static *size$(thiz, argz, s) {
 		return s.fromNative(thiz.native.length, 'int'); 
 	}
 	static *indexOf(thiz, argz, s) {
@@ -578,6 +677,43 @@ class JavaString extends EasyObjectValue {
 	}
 	static *toString$(thiz, argz, s) { return s.fromNative(thiz.native); }
 
+	static *trim(thiz, argz, s) {
+		return thiz.native.trim();
+	}
+
+	static *replace(thiz, argz, s) {
+		return thiz.native.split(argz[0].toNative()).join(argz[1].toNative())
+	}
+
+	static *split(thiz, argz, s) {
+		let regex = new RegExp(argz[0].toNative(), 'g')
+		let orig = thiz.toNative()
+		if(argz.length > 1) {
+			let limit = argz[1].toNative()
+			if(limit === 0) { return orig.split(regex) }
+			let prev = orig.split(regex, limit - 1)
+			let i = 0;
+			do {
+				i += 1;
+				if(i == limit) {
+					break;
+				}
+			}while(regex.exec(orig) && i < limit);
+			prev.push(orig.slice(regex.lastIndex))
+			return prev
+		} else {
+			return orig.split(regex)
+		}
+	}
+	static *charAt(thiz, argz, s) {
+		return thiz.native[argz[0].toNative()]
+	}
+	static *toLowerCase(thiz, argz, s) {
+		return thiz.native.toLowerCase()
+	}
+	static *toUpperCase(thiz, argz, s) {
+		return thiz.native.toUpperCase()
+	}
 }
 
 class Integer extends EasyObjectValue {
@@ -585,10 +721,10 @@ class Integer extends EasyObjectValue {
 		return s.fromNative(Math.floor(thiz.native)); 
 	}
 	static *toString$(thiz, args, s) { 
-		return s.fromNative(thiz.native);
+		return s.fromNative(thiz.native.toString());
 	}
 	*call(thiz, args, s) {
-		return Value.fromNative(7);
+		return thiz;
 	}
 }
 
@@ -601,8 +737,75 @@ class Double extends EasyObjectValue {
 	}
 }
 
+class InitializerList extends EasyObjectValue {
+	// Hack for CodeCombat x-y-z coordinate literals
+	*call(thiz, args, s) {
+		let result = ArrayValue.make(args, s.realm);
+		for ( let i = 0; i < args.length; ++i ) {
+			if ( i == 0 ) yield * result.set("x", args[i]);
+			if ( i == 1 ) yield * result.set("y", args[i]);
+			if ( i == 2 ) yield * result.set("z", args[i]);
+		}
+		return result;
+	}
+}
+
 function getTypeKey(w) {
 	if ( !w ) return 'V'
+}
+
+function *dispatch(name, thiz, args, s, extra) {
+	let target = undefined
+	let w = '$V$';
+	for ( let a of args ) {
+		debug("ARG", a.boundType, a.debugString);
+		switch ( a.boundType ) {
+			case 'double': w += 'D'; break;
+			case 'int': w += 'I'; break;
+			case 'string': w += 'S'; break;
+			default: w += 'V';
+		}
+	}
+
+	function reduceBuiltins(s) {
+		s = s.replace("LInteger_", "I");
+		s = s.replace("LDouble_", "D");
+		return s;
+	}
+
+	let canidates = [];
+	for ( let m in thiz.properties ) {
+		let parts = m.match(/^([^$]+)\$(.)\$(.*)/);
+		debug("?",m,'vs',name);
+		if ( !parts ) continue;
+		if ( parts[1] != name ) continue;
+		let target = yield * thiz.get(m, s);
+		if ( m == name + w) {
+			canidates = [[target, m, 100]];
+			break;
+		}
+		let score = 80;
+		let wtest = '$' + parts[2] + '$' + parts[3];
+		debug("W",w,wtest);
+		if ( wtest.length != w.length ) score -= 40;
+
+		let a = reduceBuiltins(wtest);
+		let b = reduceBuiltins(w);
+
+
+
+		if ( a != b ) score -= 10;
+
+		canidates.push([target, m, score]);
+	}
+
+	if ( canidates.length == 0 ) {
+		debug("CALL FAILED", name)
+		return Value.undef;
+	}
+	canidates.sort((a,b) => b[2] - a[2]);
+	debug("Found", w, canidates[0][0].name);
+	return yield * canidates[0][0].call(thiz, args, s, extra);
 }
 
 class JavaMethodDispatch extends EasyObjectValue {
@@ -612,57 +815,9 @@ class JavaMethodDispatch extends EasyObjectValue {
 		this.realm = realm;
 	}
 
-	*call(thiz, args, s, n) {
-		let target = undefined
-		let w = '$V$';
-		for ( let a of args ) {
-			debug("ARG", a.boundType);
-			switch ( a.boundType ) {
-				case 'double': w += 'D'; break;
-				case 'int': w += 'I'; break;
-				case 'string': w += 'S'; break;
-				default: w += 'V';
-			}
-		}
-
-		function reduceBuiltins(s) {
-			s = s.replace("LInteger_", "I");
-			s = s.replace("LDouble_", "D");
-			return s;
-		}
-
-		let canidates = [];
-		for ( let m in thiz.properties ) {
-			let parts = m.match(/^([^$]+)\$(.)\$(.*)/);
-			if ( !parts ) continue;
-			if ( parts[1] != this.name ) continue;
-			let target = yield * thiz.get(m, s);
-			if ( m == this.name + w) {
-				canidates = [[target, m, 100]];
-				break;
-			}
-			let score = 80;
-			let wtest = '$' + parts[2] + '$' + parts[3];
-			console.log("W",w,wtest);
-			if ( wtest.length != w.length ) score -= 40;
-
-			let a = reduceBuiltins(wtest);
-			let b = reduceBuiltins(w);
-
-
-
-			if ( a != b ) score -= 10;
-
-			canidates.push([target, m, score]);
-		}
-
-		if ( canidates.length == 0 ) {
-			debug("CALL FAILED", this.name)
-			return Value.undef;
-		}
-		canidates.sort((a,b) => b[2] - a[2]);
-		console.log("Found", w, canidates);
-		return yield * canidates[0][0].call(thiz, args, s, n);
+	*call(thiz, args, s, extra) {
+		if(thiz.debugString == 'undefined') thiz = this.realTarget
+		return yield * dispatch(this.name, thiz, args, s, extra);
 	}
 }
 
@@ -675,6 +830,7 @@ function wrap(target, realm) {
 		if ( Object.getOwnPropertyDescriptor(target.properties, parts[1]) ) continue;
 		let dispatch = new JavaMethodDispatch(parts[1], realm);
 		dispatch.superTarget = v.superTarget
+		dispatch.realTarget = target
 		target.setImmediate(parts[1], dispatch);
 	}
 	//debug("= ", target, Object.getOwnPropertyNames(target.properties));
@@ -684,16 +840,107 @@ class JavaCreateClass extends EasyObjectValue {
 	*call(thiz, args, s) {
 
 		let name = yield * args[0].toStringNative();
-		wrap(args[1], s.realm);
-		wrap(yield * args[1].get('prototype', s.realm), s.realm);
-		s.global.add(name, args[1]);
-		args[1].call = JavaMethodDispatch.prototype.call;
-		args[1].name = name;
+		let target = args[1];
+		wrap(target, s.realm);
+		wrap(yield * target.get('prototype', s.realm), s.realm);
+		s.global.add(name, target);
+		target.name = name;
+		target.call = function*(thiz, args, s) {
+			let pt = yield * target.makeThisForNew();
+			debug("-> Invoke ctor", name);
+			yield * dispatch(name, pt, args, s);
+			return pt;
+		}
 		
+		//let ctor = yield * target.get('constructor', s.realm);
+		//target.setImmediate(name + '$V$', ctor);
+
 		return args[0];
 	}
 }
 
+class JavaCreateDefault extends EasyObjectValue {
+	*call(thiz, args, s) {
+		let typ = yield * args[0].toStringNative();
+		switch ( typ ) {
+			case "int":
+			case "float":
+			case "double":
+				return s.fromNative(0, typ);
+			default:
+				if ( s.realm.options.language != "cpp" ) {
+					return Value.undef;
+				}
+				let callee = s.get(typ);
+				if ( callee ) {
+					let thiz = yield * callee.makeThisForNew(s.realm);
+					let result = yield * callee.call(thiz, [], s);
+					return thiz;
+				}
+				return Value.undef;
+		} 
+		
+	}
+}
+
+class JavaNewInstance extends EasyObjectValue {
+	*call(thiz, args, s) {
+		if ( s.realm.options.language != "cpp" ) {
+			return args[0]
+		}
+		let object = ArrayValue.make(args, s.realm);
+		return new esper.plugins.pointers.PointerValue(object, 0, s.realm);
+		
+	}
+}
+
+function *getLength(v) {
+	let m = yield * v.get('length');
+	return yield * m.toUIntNative();
+}
+
+class CPPListProto extends EasyObjectValue {
+	constructor(realm) {
+		super(realm);
+	}
+
+	static *size$e(thiz) {
+		return yield * getLength(thiz);
+	}
+
+	static *push_back$e(thiz, args) {
+		let l = yield * getLength(thiz);
+		for ( let i = 0; i < args.length; ++i ) {
+			yield * thiz.set(l + i, args[i]);
+		}
+		let nl = Value.fromNative(l + args.length);
+		yield * thiz.set('length', nl);
+		return Value.fromNative(l + args.length);
+	}
+
+	static *pop$e(thiz) {
+		let l = yield * getLength(thiz);
+		if (l < 1) return Value.undef;
+		let poped = yield * thiz.get('0');
+		for( let i = 0; i < l-1; i++) {
+			let next = yield * thiz.get('' + (i+1));
+			yield * thiz.set(i, next);
+		}
+		delete thiz.properties[l-1];
+		yield * thiz.set('length', Value.fromNative(l-1))
+		return poped;
+	}
+
+	static *pop_back$e(thiz) {
+		let l = yield * getLength(thiz);
+		if (l < 1) return Value.undef;
+		let poped = yield * thiz.get('' + (l-1));
+		delete thiz.properties[l-1];
+		yield * thiz.set('length', Value.fromNative(l-1));
+		return poped;
+	}
+}
+CPPListProto.prototype.wellKnownName = '%CPPListPrototype%';
 
 class JavaMath extends EasyObjectValue {
 	static *random(thiz, args, s) { return s.fromNative(0, 'double'); }
@@ -728,7 +975,12 @@ class System extends EasyObjectValue {
 	static *out$g(thiz, argz, s) { return this.out; }
 }
 
-module.exports = { o: {JavaObject}, f:{Math:JavaMath, JavaCreateClass, JavaString, Integer, Double, System} }
+module.exports = {
+	o: {JavaObject},
+	p: {CPPListProto},
+	f:{Math:JavaMath, JavaCreateClass, JavaCreateDefault, JavaNewInstance, JavaString, Integer, Double, System, InitializerList} 
+}
+
 
 /***/ })
 /******/ ]);

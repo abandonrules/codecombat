@@ -122,7 +122,7 @@
     }
     computed: {
       ozariaCourse: ->
-        return utils.ozariaCourseIDs.includes(@course._id)
+        return utils.orderedCourseIDs.includes(@course._id)
       challengeLink: ->
         if me.isSessionless()
           link = "/play/level/#{@nextAssessment.slug}?course=#{@course._id}&codeLanguage=#{utils.getQueryVariable('codeLanguage', 'python')}"
@@ -132,9 +132,9 @@
         return link
       mapLink: ->
         if me.isSessionless()
-          link = "/teachers/courses"
+          link = "/teachers/units"
         else if this.ozariaCourse
-          link = "/ozaria/play/#{@course.campaignID}?course-instance=#{@courseInstanceID}"
+          link = "/play/#{@course.campaignID}?course-instance=#{@courseInstanceID}"
         else
           link = "/play/#{@course.campaignID}?course-instance=#{@courseInstanceID}"
         return link
@@ -189,12 +189,16 @@
       heroImage: -> 
         unless @$store.state.me.heroConfig?.thangType
           return "/images/pages/play/modal/captain.png"
-        else
-          slug = heroMap[@$store.state.me.heroConfig.thangType]
-          if !slug?
-            return "/images/pages/play/modal/captain.png"
-          else if slug in thangTypeConstants.heroClasses.Warrior 
-            return "/images/pages/play/modal/#{slug}.png"
+        slug = heroMap[@$store.state.me.heroConfig.thangType]
+        if !slug?
+          return "/images/pages/play/modal/captain.png"
+        juniorHeroReplacement = _.invert(thangTypeConstants.juniorHeroReplacements)[slug]
+        if juniorHeroReplacement
+          slug = juniorHeroReplacement
+        heroesWithImg = ['stalwart', 'samurai', 'raider', 'guardian', 'goliath', 'duelist', 'champion', 'captain', 'knight']
+        if slug in heroesWithImg
+          return "/images/pages/play/modal/#{slug}.png"
+        return "/images/pages/play/modal/captain.png"
       comboImage: ->
         if @allConceptsUsed
           return "/images/pages/play/modal/combo_complete.png"

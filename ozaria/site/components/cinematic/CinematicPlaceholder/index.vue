@@ -1,24 +1,18 @@
 <script>
-  module.exports = Vue.extend({
-    props: {
-      levelSlug: {
-        type: String,
-        required: true,
-        default: ''
-      }
-    },
-    computed: {
-      playLink: function () {
-        return `/ozaria/play/level/${this.levelSlug}`
-      }
-    },
-    async created () {
-      if (!me.hasCinematicAccess()) {
-        alert('You must be logged in as an admin to use this page.')
-        return application.router.navigate('/', { trigger: true })
-      }
+module.exports = Vue.extend({
+  props: {
+    levelSlug: {
+      type: String,
+      required: true,
+      default: ''
     }
-  })
+  },
+  computed: {
+    playLink: function () {
+      return `/play/level/${this.levelSlug}`
+    }
+  }
+})
 </script>
 
 <template>

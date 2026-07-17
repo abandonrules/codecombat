@@ -3,11 +3,16 @@ utils = require 'core/utils'
 ThangTypeLib =
   getPortraitURL: (thangTypeObj) ->
     return '' if application.testing
+    prefix = ''
+    if utils.isCodeCombat and window.location.host is 'localhost:3000' and me.get('slug') is 'nick'
+      # Create a way to bypass local database portrait loading, since it slows down level editor
+      # TODO hack alert: is there a clean/general way to do this?
+      prefix = 'https://codecombat.com'
     if iconURL = thangTypeObj.rasterIcon
-      return "/file/#{iconURL}"
+      return "#{prefix}/file/#{iconURL}"
     if rasterURL = thangTypeObj.raster
-      return "/file/#{rasterURL}"
-    "/file/db/thang.type/#{thangTypeObj.original}/portrait.png"
+      return "#{prefix}/file/#{rasterURL}"
+    "#{prefix}/file/db/thang.type/#{thangTypeObj.original}/portrait.png"
 
   getHeroShortName: (thangTypeObj) ->
     # New way: moved into ThangType model
@@ -49,8 +54,8 @@ ThangTypeLib =
     # Old way: hard-coded
     slug = thangTypeObj?.slug ? thangTypeObj?.get?('slug') ? ''
     heroGenders =
-      male: ['knight', 'samurai', 'trapper', 'potion-master', 'goliath', 'assassin', 'necromancer', 'duelist', 'code-ninja']
-      female: ['captain', 'ninja', 'forest-archer', 'librarian', 'sorcerer', 'raider', 'guardian', 'pixie', 'master-wizard', 'champion']
+      male: ['knight', 'samurai', 'trapper', 'potion-master', 'goliath', 'assassin', 'necromancer', 'duelist', 'code-ninja','armando-hoyos']
+      female: ['captain', 'ninja', 'forest-archer', 'librarian', 'sorcerer', 'raider', 'guardian', 'pixie', 'master-wizard', 'champion', 'valkyrie']
     if slug in heroGenders.female then 'female' else 'male'
 
 module.exports = ThangTypeLib

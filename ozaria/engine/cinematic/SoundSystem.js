@@ -2,54 +2,48 @@
  * System for orchestrating the various sound commands.
  * An abstraction around the `howler.js` sound library.
  */
-import { Howl } from 'howler'
-import { getSetupMusic, getSoundEffects } from '../../../app/schemas/models/selectors/cinematic'
+import { getSetupMusic, getSoundEffects, getVoiceOver } from '../../../app/schemas/models/selectors/cinematic'
 import { SyncFunction, Sleep, SequentialCommands } from './commands/commands'
 
-/**
- * @param {import('../../../app/schemas/models/selectors/cinematic').Sound} music
- */
-const getMusicKey = (music) => {
-  const key = music.mp3 || music.ogg
-  if (!key) {
-    throw new Error('Invalid music object')
-  }
-  return key
-}
-export class SoundSystem {
-  constructor () {
-    // Map of key value pairs <string, Howl>
-    this.loadedSounds = new Map()
-    // Map of sounds currently playing <integer, Howl>
-    this.playingSound = new Map()
+import store from 'app/core/store'
+import { BACKGROUND_VOLUME } from './constants'
+
+// Returns a voice over command from list of audio files
+// Includes a way to stop audio playing if user skips ahead, or goes backwards.
+const createVoiceOverCommand = (dialogNode, speakerThangType) => {
+  const soundIdPromise = store.dispatch('voiceOver/preload', { dialogNode, speakerThangType })
+  const voiceOverPlayCommand = new SyncFunction(() =>
+    store.dispatch('voiceOver/playVoiceOver', soundIdPromise)
+  )
+
+  voiceOverPlayCommand.undoCommandFactory = () => {
+    return new SyncFunction(() => {
+      store.dispatch('audio/fadeTrack', { to: 0, track: 'voiceOver', duration: 100 })
+    })
   }
 
-  /**
-   * @param {string} key
-   * @param {import('../../../app/schemas/models/selectors/cinematic').Sound} music
-   */
-  preload (key, music) {
-    if (this.loadedSounds.has(key)) {
-      console.warn(`Sound with key: '${key}' is already loaded`)
-      return
+  return voiceOverPlayCommand
+}
+
+const standardizeSpeaker = (speaker) => {
+  speaker = speaker.replace(/cinematic-/, '')
+  speaker = speaker.replace(/ghost-/, '')
+  speaker = speaker.replace(/-ghost/, '')
+  speaker = speaker.replace(/-with-rabbit/, '')
+  speaker = speaker.replace(/-rabbit/, '')
+  speaker = speaker.replace(/past-/, '')
+  speaker = speaker.replace(/young-/, '')
+  speaker = speaker.replace(/-01/, '')
+  speaker = speaker.replace(/-restored/, '')
+  speaker = speaker.replace(/salazar-dragon/, 'dragon-salazar')
+  return speaker
+}
+
+export class SoundSystem {
+  constructor () {
+    this.undoSystemState = {
+      lastBackgroundMusic: null
     }
-    if (!music) {
-      return
-    }
-    const sources = []
-    const extensions = []
-    for (const key of Object.keys(music)) {
-      sources.push(`/file/${music[key]}`)
-      extensions.push(key)
-    }
-    this.loadedSounds.set(key, new Howl({
-      src: sources,
-      format: extensions,
-      preload: true,
-      onloaderror: function (...args) {
-        console.log(`Failed to load sound`, args)
-      }
-    }))
   }
 
   /**
@@ -62,9 +56,45 @@ export class SoundSystem {
     const commands = []
     const music = getSetupMusic(shot)
     if (music) {
-      const key = getMusicKey(music)
-      this.preload(key, music)
-      commands.push(new SyncFunction(() => { this.stopAllSounds(); this.playSound(key) }))
+      const lastBackgroundMusic = this.undoSystemState.lastBackgroundMusic
+      this.undoSystemState.lastBackgroundMusic = _.cloneDeep(music)
+      const musicCommand = new SyncFunction(async () => {
+        await store.dispatch('audio/stopTrack', 'background')
+
+        const srcFiles = []
+        if (music.files.mp3) {
+          srcFiles.push(music.files.mp3)
+        }
+        if (music.files.ogg) {
+          srcFiles.push(music.files.ogg)
+          if (!music.files.mp3) {
+            // We usually have an .mp3 with the same filename, but in many cinematics we didn't specify it.
+            // Safari cannot play .ogg, so we need to specify the .mp3 file.
+            srcFiles.push(music.files.ogg.replace(/\.ogg$/, '.mp3'))
+          }
+        }
+        await store.dispatch('audio/playSound', {
+          track: 'background',
+          volume: BACKGROUND_VOLUME,
+          src: srcFiles.map(f => `/file/${f}`),
+          loop: music.loop
+        })
+      })
+      musicCommand.undoCommandFactory = () => {
+        if (lastBackgroundMusic) {
+          return new SyncFunction(async () => {
+            await store.dispatch('audio/stopTrack', 'background')
+            await store.dispatch('audio/playSound', {
+              track: 'background',
+              src: Object.values(lastBackgroundMusic.files).map(f => `/file/${f}`),
+              loop: lastBackgroundMusic.loop
+            })
+          })
+        } else {
+          return new SyncFunction(() => store.dispatch('audio/stopTrack', 'background'))
+        }
+      }
+      commands.push(musicCommand)
     }
     return commands
   }
@@ -73,56 +103,58 @@ export class SoundSystem {
    * System interface method that CinematicParser calls on each dialogNode
    * of the cinematic.
    * @param {DialogNode} dialogNode
+   * @param {Object} shot
+   * @param {Object} speakerToThangTypeSlugMap
    * @returns {AbstractCommand[]}
    */
-  parseDialogNode (dialogNode) {
+  parseDialogNode (dialogNode, shot, speakerToThangTypeSlugMap) {
+    const soundCommands = []
+    let speakerThangType = speakerToThangTypeSlugMap[dialogNode.speaker]
+    if (dialogNode.textLocation && dialogNode.textLocation.y > 500) {
+      // It's always mouse if it's low on the screen
+      speakerThangType = 'mouse'
+    }
+    if (!speakerThangType) {
+      // It's usually (always?) the hero
+      speakerThangType = 'hero'
+    }
+    speakerThangType = standardizeSpeaker(speakerThangType)
     const soundEffects = getSoundEffects(dialogNode) || []
-    return soundEffects.map(({ sound, triggerStart }) => {
-      const key = getMusicKey(sound)
-      this.preload(key, sound)
-      return new SequentialCommands([
+    soundEffects.forEach(({ sound, triggerStart }) => {
+      const soundIdPromise = store.dispatch('audio/playSound', {
+        track: 'soundEffects',
+        autoplay: false,
+        src: Object.values(sound).map(f => `/file/${f}`)
+      })
+
+      soundCommands.push(new SequentialCommands([
         new Sleep(triggerStart),
-        new SyncFunction(() => this.playSound(key))
-      ])
+        new SyncFunction(async () => {
+          const soundId = await soundIdPromise
+          store.dispatch('audio/playSound', soundId)
+        })
+      ]))
     })
-  }
 
-  /**
-   * Finds and plays the sound associated to the given key, hooking the sound up
-   * to various event handlers and tracking the sound in the `this.playingSound`
-   * map.
-   * @param {Howl} key
-   */
-  playSound (key) {
-    const sound = this.loadedSounds.get(key)
-    if (!sound) {
-      console.warn(`Tried to play music '${key}' that doesn't exist.`)
-      return
-    }
-    const soundInstanceId = sound.play()
-
-    const cleanupSound = (isStop = false) => () => {
-      const sound = this.playingSound.get(soundInstanceId)
-      if (!sound) {
-        return
-      }
-      if (sound.loop() && !isStop) {
-        return
-      }
-      this.playingSound.delete(soundInstanceId)
-
-      sound.off('stop', cleanupSound(true), soundInstanceId)
-      sound.off('end', cleanupSound(), soundInstanceId)
+    const voiceOver = getVoiceOver(dialogNode)
+    const hasText = dialogNode?.text && /[a-z]/i.test(dialogNode.text)
+    if (voiceOver || hasText) {
+      soundCommands.push(
+        createVoiceOverCommand(dialogNode, speakerThangType)
+      )
+    } else {
+      // If no voice over, cut any VO that may be playing.
+      soundCommands.push(
+        new SyncFunction(() => {
+          store.dispatch('audio/fadeTrack', { to: 0, track: 'voiceOver', duration: 100 })
+        })
+      )
     }
 
-    sound.once('stop', cleanupSound(true), soundInstanceId)
-    sound.once('end', cleanupSound(), soundInstanceId)
-    this.playingSound.set(soundInstanceId, sound)
+    return soundCommands
   }
 
   stopAllSounds () {
-    for (const key of this.playingSound.keys()) {
-      this.playingSound.get(key).stop(key)
-    }
+    store.dispatch('audio/stopAll', { unload: true })
   }
 }

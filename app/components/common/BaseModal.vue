@@ -1,11 +1,11 @@
 <script>
-  import BaseModalContainer from './BaseModalContainer'
+import BaseModalContainer from './BaseModalContainer'
 
-  export default {
-    components: {
-      BaseModalContainer
-    }
+export default {
+  components: {
+    BaseModalContainer
   }
+}
 </script>
 
 <template>
@@ -46,12 +46,15 @@
       justify-content: center
       align-items: center
       width: inherit
-      padding: 10px
+      padding: 5px
 
     .modal-header
       font-weight: bold
       font-size: 30px
+      position: relative
 
     .modal-body
       font-size: 20px
+      flex-grow: 1
+      padding-top: 0px
 </style>

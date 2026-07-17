@@ -12,13 +12,19 @@
     </div>
     <div class="modal-body">
       <div class="narrative-row row">
-        <div class="vega-face">
+        <div
+          v-if="characterPortrait !== 'blank'"
+          class="portrait"
+        >
           <img
-            class="vega-face-image"
-            src="/images/ozaria/level/vega_face.png"
+            class="portrait-image"
+            :src="characterURL"
           >
         </div>
-        <div class="narrative-div">
+        <div
+          class="narrative-div"
+          :style="{ top: characterPortrait !== 'blank' ? undefined : '0px' }"
+        >
           <div class="narrative-speech-bubble">
             <span class="narrative-text"> {{ narrative }} </span>
           </div>
@@ -42,40 +48,57 @@
 </template>
 
 <script>
-  export default Vue.extend({
-    name: 'LevelIntroModal',
-    props: {
-      levelName: {
-        type: String,
-        required: true
-      },
-      levelType: {
-        type: String,
-        required: true
-      },
-      narrative: {
-        type: String,
-        required: true
-      },
-      learningGoals: {
-        type: String,
-        required: true
-      },
-      onStart: {
-        type: Function,
-        required: true
-      }
+export default Vue.extend({
+  name: 'LevelIntroModal',
+  props: {
+    levelName: {
+      type: String,
+      required: true
     },
-    computed: {
-      title: function () {
-        return this.levelType + ' Level: ' + this.levelName
-      }
+    levelType: {
+      type: String,
+      required: true
+    },
+    narrative: {
+      type: String,
+      required: true
+    },
+    learningGoals: {
+      type: String,
+      required: true
+    },
+    onStart: {
+      type: Function,
+      required: true
+    },
+    characterPortrait: {
+      type: String,
+      required: true
     }
-  })
+  },
+  computed: {
+    characterURL () {
+      if (this.characterPortrait === 'vega') {
+        return '/images/ozaria/level/vega_headshot_transparent.png'
+      } else if (this.characterPortrait === 'capella') {
+        return '/images/ozaria/level/Wise_Capella_Headshot_Transparent.png'
+      } else if (this.characterPortrait === 'octans') {
+        return '/images/ozaria/level/Octans_Headshot_Transparent.png'
+      }
+      console.error('There is no character portrait for ' + this.characterPortrait)
+      // Use Vega as fallback
+      return '/images/ozaria/level/vega_headshot_transparent.png'
+    },
+
+    title () {
+      return this.levelType + ': ' + this.levelName
+    }
+  }
+})
 </script>
 
 <style lang="sass" scoped>
-@import "ozaria/site/styles/common/variables.sass"
+@import "ozaria/site/styles/common/variables.scss"
 
 .modal-content
   width: 661px
@@ -99,13 +122,13 @@
     padding: 0px 35px
     height: 246px
 
-    .vega-face
+    .portrait
       position: relative
       top: 100px
       left: -10px
       width: 17%
 
-      .vega-face-image
+      .portrait-image
         width: 100%
         height: 100%
 

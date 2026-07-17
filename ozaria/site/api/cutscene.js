@@ -8,9 +8,9 @@ import fetchJson from 'app/core/api/fetch-json'
  */
 export const getCutscene = slugOrId => {
   if (!slugOrId) {
-    throw new Error(`No slugOrId supplied`)
+    throw new Error('No slugOrId supplied')
   }
-  return fetchJson(`/db/cutscene/${slugOrId}`)
+  return fetchJson(`/db/cutscene/${slugOrId}`, { data: { cacheEdge: true } })
 }
 
 /**
@@ -18,7 +18,7 @@ export const getCutscene = slugOrId => {
  * @async
  * @returns {Promise<Object[]>}
  */
-export const getAllCutscenes = () => fetchJson('/db/cutscene?project=slug,name')
+export const getAllCutscenes = () => fetchJson('/db/cutscene?project=slug,name&limit=1000')
 
 /**
  * Updates a cutscene in the database.

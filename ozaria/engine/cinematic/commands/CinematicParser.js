@@ -1,4 +1,4 @@
-import { ConcurrentCommands } from './commands'
+import { ConcurrentCommands, SyncFunction } from './commands'
 import { getLanguageFilter } from '../../../../app/schemas/models/selectors/cinematic'
 
 /**
@@ -69,11 +69,11 @@ const parseSetup = (shot, systems) =>
  * @param {Object} arg.shot the current shot
  * @returns {AbstractCommand[]}
  */
-const parseDialogNode = ({ dialogNode, systems, shot }) => {
+const parseDialogNode = ({ dialogNode, systems, shot, speakerToThangTypeSlugMap }) => {
   const dialogCommands = Object.values(systems)
     .filter(sys => sys !== undefined && typeof sys.parseDialogNode === 'function')
     .reduce((commands, sys) => {
-      const dialogCommands = sys.parseDialogNode(dialogNode, shot)
+      const dialogCommands = sys.parseDialogNode(dialogNode, shot, speakerToThangTypeSlugMap)
       if (!Array.isArray(dialogCommands)) {
         throw new Error('Your system should always return an array of commands for a dialogNode')
       }
@@ -93,17 +93,29 @@ const parseDialogNode = ({ dialogNode, systems, shot }) => {
  * @param {Object} systems The systems.
  * @returns {AbstractCommand[][]} A 2d array of commands.
  */
-export const parseShot = (shot, systems, { programmingLanguage }) => {
+export const parseShot = (shot, systems, { programmingLanguage }, speakerToThangTypeSlugMap = {}) => {
   const setupCommands = parseSetup(shot, systems) || []
+  for (const speaker of ['left', 'right', 'center']) {
+    const newThangType = shot.shotSetup?.[speaker + 'ThangType']?.thangType
+    if (newThangType) {
+      speakerToThangTypeSlugMap[speaker] = newThangType.type?.slug || newThangType.type
+    }
+  }
   const dialogNodes = (shot.dialogNodes || [])
     .filter(node => getLanguageFilter(node) === undefined || getLanguageFilter(node) === programmingLanguage)
-    .map(node => parseDialogNode({ dialogNode: node, systems, shot }))
+    .map(node => parseDialogNode({ dialogNode: node, systems, shot, speakerToThangTypeSlugMap }))
     .filter(dialogCommands => dialogCommands.length > 0)
 
   // If we have both dialogNodes and some setupCommands we want to
   // have the setup occur just before the first dialogNode.
   if (dialogNodes.length > 0 && setupCommands.length > 0) {
-    return [[...setupCommands, ...dialogNodes[0]], ...dialogNodes.slice(1)]
+    return [[...setupCommands, new SyncFunction(() => {
+      if (systems.autoplay) {
+        systems.autoplay.autoplay = true
+      } else {
+        console.error('No cinematic autoplay module')
+      }
+    })], ...dialogNodes]
   }
   if (dialogNodes.length === 0) {
     return [setupCommands]

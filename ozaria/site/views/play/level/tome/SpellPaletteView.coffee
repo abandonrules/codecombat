@@ -2,11 +2,11 @@ require('ozaria/site/styles/play/level/tome/spell-palette-view.sass')
 CocoView = require 'views/core/CocoView'
 {me} = require 'core/auth'
 SpellPaletteEntryView = require './SpellPaletteEntryView'
-SpellPaletteThangEntryView = require './SpellPaletteThangEntryView'
 LevelComponent = require 'models/LevelComponent'
 ThangType = require 'models/ThangType'
 ace = require('lib/aceContainer')
 aceUtils = require 'core/aceUtils'
+store = require 'core/store'
 
 module.exports = class SpellPaletteView extends CocoView
   id: 'spell-palette-view'
@@ -18,18 +18,17 @@ module.exports = class SpellPaletteView extends CocoView
     'level:enable-controls': 'onEnableControls'
     'surface:frame-changed': 'onFrameChanged'
     'tome:change-language': 'onTomeChangedLanguage'
-    'tome:palette-clicked': 'onPalleteClick'
-    'surface:stage-mouse-down': 'closeCommandBank'
+    'tome:palette-clicked': 'onPaletteClick'
+    'level:gather-chat-message-context': 'onGatherChatMessageContext'
 
 
   events:
-    'click .command-bank-header': 'onClickHeader'
-    'click .closeBtn': 'onClickClose'
     'click .sub-section-header': 'onSubSectionHeaderClick'
-    'click': 'onClick'
+    'click .code-bank-close-btn': 'onCodeBankCloseBtnClick'
+    'transitionend': 'onTransitionEnd'
 
   initialize: (options) ->
-    {@level, @session, @thang, @useHero} = options
+    {@level, @session, @thang} = options
     @aceEditors = []
     @createPalette()
     $(window).on 'resize', @onResize
@@ -50,7 +49,7 @@ module.exports = class SpellPaletteView extends CocoView
         if subGroup != 'none'
           header = $("<div class='sub-section-header' data-panel='#sub-section-#{subGroup}-#{group}'>
               <span>#{subGroup}</span>
-              <div style='float: right; padding-top: 3px;' class='glyphicon glyphicon-chevron-down blue-glyphicon'></div>
+              <button tabindex='0' style='float:right;animation: none;position:absolute;right:10px;transform: rotate(90deg);' class='shepherd-next-button-active shepherd-button'></button>
             </a>").appendTo itemGroup
           itemSubGroup = $("<div class='property-entry-item-sub-group collapse' id='sub-section-#{subGroup}-#{group}'></div>").appendTo itemGroup
         for entry, entryIndex in entries
@@ -83,22 +82,22 @@ module.exports = class SpellPaletteView extends CocoView
         if doc.codeLanguages and not (@options.language in doc.codeLanguages)
           excludedDocs['__' + doc.name] = doc
           continue
-        allDocs['__' + doc.name] ?= []
-        allDocs['__' + doc.name].push doc
         if doc.type is 'snippet' then doc.owner = 'snippets'
-        doc.componentName = lc.get('name')
+        docCopy = Object.assign({ componentName: lc.get('name') }, doc)
+        allDocs['__' + doc.name] ?= []
+        allDocs['__' + doc.name].push docCopy
 
     methodsBankList = @options.level.get('methodsBankList') || []
-    
+
     if methodsBankList.length == 0
       console.log("Methods Bank list is empty!!")
     else
-      @organizePaletteHero methodsBankList, allDocs, excludedDocs
+      @organizePalette methodsBankList, allDocs, excludedDocs
     @publishAutoCompleteEvent(allDocs)
 
   # Reads the methods bank list and find its documentation from allDocs(i.e. docs coming from level components)
   # This also groups the list based on the section
-  organizePaletteHero: (methodsBankList, allDocs, excludedDocs) ->
+  organizePalette: (methodsBankList, allDocs, excludedDocs) ->
     @entries = []
     @tts = @supermodel.getModels ThangType
     defaultSection = 'methods'
@@ -112,29 +111,20 @@ module.exports = class SpellPaletteView extends CocoView
       propName = prop.name
       doc = _.find (allDocs['__' + propName] ? []), (doc) ->
         return true if !prop.componentName or (doc.componentName == prop.componentName)
-      if not doc and not excludedDocs['__' + propName] 
+      if not doc and not excludedDocs['__' + propName]
         console.log 'could not find doc for', propName, 'from', allDocs['__' + propName]
         doc = propName
       if doc
-        @entries.push @addEntry(doc, section, subSection)
+        @entries.push @addEntry(doc, section, subSection, false)
     @entryGroups = _.groupBy @entries, (entry) -> entry.doc.section
-    
+
 
   addEntry: (doc, section, subSection, shortenize=true, isSnippet=false, item=null, showImage=false) ->
-    if doc.type is 'spawnable'
-      thangName = doc.name
-      if @thang.spawnAliases[thangName]
-        thangName = @thang.spawnAliases[thangName][0]
-      info = @thang.buildables[thangName]
-      tt = _.find @tts, (t) -> t.get('original') is info?.thangType
-      if tt
-        new SpellPaletteThangEntryView doc: doc, section: section, subSection: subSection, thang: tt, buildable: info, buildableName: doc.name, shortenize: shortenize, language: @options.language, level: @options.level, useHero: @useHero
-    else
-      writable = (if _.isString(doc) then doc else doc.name) in (@thang.apiUserProperties ? [])
-      new SpellPaletteEntryView doc: doc, section: section, subSection: subSection, thang: @thang, shortenize: shortenize, isSnippet: isSnippet, language: @options.language, writable: writable, level: @options.level, item: item, showImage: showImage, useHero: @useHero
+    writable = (if _.isString(doc) then doc else doc.name) in (@thang.apiUserProperties ? [])
+    new SpellPaletteEntryView doc: doc, section: section, subSection: subSection, thang: @thang, shortenize: shortenize, isSnippet: isSnippet, language: @options.language, writable: writable, level: @options.level, item: item, showImage: showImage
 
   # This uses the legacy logic to publish event for auto completion in the code editor using programmable properties.
-  # This can potentially be merged with the logic in organizePaletteHero, but currently doing that makes it behave differently, so keeping it as it is for now
+  # This can potentially be merged with the logic in organizePalette, but currently doing that makes it behave differently, so keeping it as it is for now
   publishAutoCompleteEvent: (allDocs) ->
     propsByItem = {}
     itemsByProp = {}
@@ -162,7 +152,7 @@ module.exports = class SpellPaletteView extends CocoView
     else
       propStorage =
         'this': ['apiProperties', 'apiMethods']
-    
+
     itemThangTypes = {}
     itemThangTypes[tt.get('name')] = tt for tt in @supermodel.getModels ThangType  # Also heroes
 
@@ -195,7 +185,7 @@ module.exports = class SpellPaletteView extends CocoView
         propsByItem['Hero'] ?= []
         propsByItem['Hero'].push owner: owner, prop: prop, item: itemThangTypes[@thang.spriteName]
     Backbone.Mediator.publish 'tome:update-snippets', propGroups: propsByItem, allDocs: allDocs, language: @options.language
-  
+
   onDisableControls: (e) -> @toggleControls e, false
   onEnableControls: (e) -> @toggleControls e, true
   toggleControls: (e, enabled) ->
@@ -215,20 +205,17 @@ module.exports = class SpellPaletteView extends CocoView
     @createPalette()
     @render()
 
-  onClick: (e) ->
-    rightBorderWidth = parseInt(@$el.css('borderRightWidth'))
-    leftPanelWidth = parseInt(@$el.find('.left').css('width'))
-    rightPanelWidth = parseInt(@$el.find('.right').css('width'))
-    viewWidth = parseInt(@$el.css('width'))
-    viewWidthOpen = rightBorderWidth + leftPanelWidth # when only left panel is open
-    viewWidthExpanded = rightBorderWidth + leftPanelWidth + rightPanelWidth # when completely open with left and right panel
-    if viewWidth == rightBorderWidth
-      @$el.addClass('open')
-    else if (viewWidth == viewWidthOpen && e.offsetX > leftPanelWidth) || (viewWidth == viewWidthExpanded && e.offsetX > leftPanelWidth + rightPanelWidth)
-      @closeCommandBank()
-
-  onClickHeader: (e) ->
-    @closeCommandBank()
+  onCodeBankCloseBtnClick: () ->
+    $('.code-bank-left-arrow,.code-bank-right-arrow').toggleClass('hide')
+    if $('#spell-palette-view').hasClass('open')
+      $('#spell-palette-view').removeClass('open expand')
+      $('#spell-palette-view .container').css('display','none')
+    else
+      $('#spell-palette-view').addClass('open expand')
+      $('#spell-palette-view .container').css('display','block')
+      if !$('.sub-section-header.selected').length
+        $('.sub-section-header').first().click()
+        $('.spell-palette-entry-view').first().click()
 
   onSubSectionHeaderClick: (e) ->
     $et = @$(e.currentTarget)
@@ -236,11 +223,11 @@ module.exports = class SpellPaletteView extends CocoView
     isCollapsed = !target.hasClass('in')
     if isCollapsed
       target.collapse 'show'
-      $et.find('.glyphicon').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up')
+      $et.find('.shepherd-button').removeClass('shepherd-next-button-active').addClass('shepherd-back-button-active')
       $et.toggleClass('selected', true)
     else
       target.collapse 'hide'
-      $et.find('.glyphicon').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down')
+      $et.find('.shepherd-button').removeClass('shepherd-next-back-active').addClass('shepherd-next-button-active')
       $et.toggleClass('selected', false)
 
     setTimeout () =>
@@ -248,18 +235,7 @@ module.exports = class SpellPaletteView extends CocoView
     , 200
     e.preventDefault()
 
-  onClickClose: (e) ->
-    @closeRightPanel()
-
-  closeRightPanel: () =>
-    @$el.find('.left .selected').removeClass 'selected'
-    @$el.removeClass('expand')
-
-  closeCommandBank: () =>
-    @closeRightPanel()
-    @$el.removeClass('open')
-
-  onPalleteClick: (e) ->
+  onPaletteClick: (e) ->
     @$el.addClass('expand')
     content = @$el.find(".rightContentTarget")
     content.html(e.entry.doc.initialHTML)
@@ -274,6 +250,29 @@ module.exports = class SpellPaletteView extends CocoView
       aceEditor = aceUtils.initializeACE @, codeLanguage
       aceEditor.renderer.setShowGutter true
       aceEditors.push aceEditor
+
+  onTransitionEnd: (e) ->
+    store.dispatch('game/toggleCodeBank')
+
+  onGatherChatMessageContext: (e) ->
+    context = e.chat.context
+    context.apiProperties = []
+    for group, entries of @entryGroups
+      for entry in entries
+        if e.chat.example
+          # Using entry.options.doc instead of entry.doc skips a lot of the data processing
+          doc = _.omit(entry.options.doc, 'shortDescription', 'autoCompletePriority', 'snippets', 'userShouldCaptureReturn')
+        else
+          # Bakes in code language selection and translations
+          doc = _.omit(entry.doc, 'ownerName', 'shortName', 'shorterName', 'title', 'initialHTML', 'shortDescription', 'autoCompletePriority', 'snippets', 'i18n', 'userShouldCaptureReturn')
+          # TODO: remove more nested i18n
+        doc.owner = 'hero' if doc.owner in ['this', 'more']
+        delete doc.example unless doc.example
+        delete doc.returns?.example if doc.returns and not doc.returns.example
+        delete doc.returns?.description if doc.returns and not doc.returns.description
+        #console.log doc
+        context.apiProperties.push doc
+    null
 
   destroy: ->
     entry.destroy() for entry in @entries

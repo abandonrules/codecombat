@@ -15,12 +15,6 @@
   background-size: 100% 100%
   z-index: 2
 
-  #codeplay-powered-by-banner
-    width: 350px
-    position: relative
-    z-index: 1
-    top: 15px
-
   .hinge
     position: absolute
     top: 0
@@ -43,18 +37,18 @@
     background-size: 100% 100%
     > *:not(.spell-tool-buttons)
       @include opacity(0.5)
-  
+
   .btn.btn-small
     margin-top: 15px
     margin-right: 0.8vw
     font-size: 18px
-    
+
     &.reload-code
       margin-right: 1.3vw
 
     .glyphicon
       font-size: 16px
-    
+
   .btn.btn-small.spell-list-button
     float: left
     margin-top: 5px
@@ -65,9 +59,16 @@
     top: 0px
     z-index: 3
 
+    #ask-teacher-for-help
+      display: inline-block
+
   .reload-code
     float: right
     display: none
+
+  .spell-chatbot
+    margin-top: 15px
+    display: inline-block
 
   .beautify-code
     float: right
@@ -81,6 +82,9 @@
       .glyphicon-fullscreen
         display: none
 
+  #switch-team
+    color: white
+
   .hints-button
     float: right
     border-style: solid
@@ -90,6 +94,9 @@
     &:hover, &:active
       border-image: url(/images/common/button-background-primary-pressed.png) 14 20 20 20 fill round
 
+  .blocks-button
+    float: right
+
   .videos-button
     float: right
     &:hover, &:active
@@ -98,16 +105,17 @@
 
   .thang-avatar-wrapper
     border-width: 0
-    
+
   #amazon-level-logo
     height: 60px
     position: absolute
     top: 10px
     left: 30px
 
-//html.no-borderimage 
-//  .spell-top-bar-view
-//    border-width: 0
-//    border-image: none
-//    background: transparent url(/images/level/code_editor_tab_background.png) no-repeat
-//    background-size: 100% 100%
+  .spell-chatbot-hint
+    width: 25px
+    height: 25px
+    margin-right: 15px
+    position: relative
+    top: 5px
+

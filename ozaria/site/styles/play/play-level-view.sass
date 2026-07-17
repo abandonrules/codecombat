@@ -1,7 +1,10 @@
+@use "sass:math"
 @import "app/styles/mixins"
 @import "app/styles/bootstrap/variables"
 @import "ozaria/site/styles/play/variables"
-@import "ozaria/site/styles/common/variables.sass"
+@import "ozaria/site/styles/common/variables.scss"
+@import "ozaria/site/styles/play/images"
+@import "app/styles/play/ace-editor"
 
 body
   height: 100vh
@@ -12,7 +15,6 @@ body.is-playing
 $level-resize-transition-time: 0.5s
 // TODO: use this for real-time playback but not cinematic playback
 
-
 #level-view
   position: absolute
   overflow: hidden
@@ -22,7 +24,7 @@ $level-resize-transition-time: 0.5s
 
   &.real-time, &.cinematic
     // Hmm, somehow the #page-container is cutting us off by ~17px on the right, looks a bit off.
-    
+
     &.real-time.game-dev
       #canvas-wrapper
         width: 80%
@@ -40,7 +42,7 @@ $level-resize-transition-time: 0.5s
       width: 100%
       button, h4
         display: none
-    #code-area, #thang-hud
+    #code-area
       display: none
       visibility: hidden
     #gold-view
@@ -84,6 +86,24 @@ $level-resize-transition-time: 0.5s
     #stop-real-time-playback-button
       display: block
       z-index: 20
+      background-image: url($Button)
+      text-align: center
+      background-position: center
+      padding: 10px 25px
+      background-size: contain
+      background-color: transparent
+      background-repeat: no-repeat
+      border: none
+      color: #215055
+      font-family: "Work Sans"
+      font-size: 17px
+      font-weight: bold
+      letter-spacing: 0.77px
+      line-height: 20px
+      text-transform: uppercase
+
+      &:hover:not(:disabled)
+        background-image: url($ButtonHover)
 
   &.cinematic
     #playback-view
@@ -107,6 +127,8 @@ $level-resize-transition-time: 0.5s
 
   #canvas-wrapper
     top: $goals-vega-height
+    &.undo-vega-spacing
+      top: 7.3%
     width: $game-view-width
     position: relative
     overflow: hidden
@@ -146,21 +168,7 @@ $level-resize-transition-time: 0.5s
     &.flag-color-selected
       cursor: crosshair
 
-  #ascii-surface
-    position: absolute
-    z-index: 3
-    top: 0
-    left: 0
-    pointer-events: none
-    white-space: pre
-    font-family: Courier, monospace
-    color: white
-    background-color: rgba(14, 59, 130, 0.25)
-    transform-origin: 0 0 0
-    line-height: 15px
-
-
-  #code-area
+  #code-area, #solution-area
     @include box-sizing(border-box)
     width: $code-area-width
     background-size: 100% 100%
@@ -171,15 +179,84 @@ $level-resize-transition-time: 0.5s
     //@include transition(width $level-resize-transition-time ease-in-out, right $level-resize-transition-time ease-in-out)
     z-index: 2
 
+  #solution-area
+    right: 43.5%
+    right: $code-area-width
+    bottom: 0
+    width: 30%
+    width: calc(0.75 * $code-area-width)
+    transform: translate(0, -110%)
+    transition: transform 1s
+    z-index: 1024
+    box-shadow: none
+    background: transparent
+    opacity: 0
+    pointer-events: none
+
+    .ace_gutter-layer
+      pointer-events: none
+
+    &.display
+      transform: translate(0, 0)
+      pointer-events: auto
+
+      .ace_gutter-layer
+        pointer-events: auto
+
+    #solution-view
+      position: absolute
+      width: 100%
+      top: $goals-vega-height
+      height: 78.7%
+      display: flex
+      z-index: 5
+
+      span.code-background
+        border-right: 1px solid #F7D047
+        background-color: white
+        position: absolute
+        top: -26px
+        left: 0px
+        bottom: 0px
+        right: 0px
+        z-index: -1
+
+      .solution-label
+        position: absolute
+        top: -24px
+        left: 26px
+        z-index: 4
+        font-family: "Open Sans Condensed", "Helvetica Neue", Helvetica, Arial, sans-serif
+        font-size: 14px
+        padding: 0px 10px
+        color: #6E654B
+        font-weight: bold
+        text-transform: uppercase
+
+      .close-solution-btn
+        cursor: pointer
+        position: absolute
+        top: -24px
+        right: 26px
+        z-index: 4
+        font-family: "Open Sans Condensed", "Helvetica Neue", Helvetica, Arial, sans-serif
+        font-size: 24px
+        padding: 0px 10px
+        color: #6E654B
+        font-weight: bold
+        text-transform: uppercase
+
+      @include ace(false)
+
   #game-area
     position: relative
     overflow: hidden
     height: 100%
-    
+
   // Level Docs
   .ui-effects-transfer
     border: 2px dotted gray
-  
+
   .modal
     img
       float: right
@@ -189,7 +266,7 @@ $level-resize-transition-time: 0.5s
 
   #multiplayer-join-link
     font-size: 12px
-      
+
   // Custom Buttons
   .btn.banner
     @include banner-button(#FFF, #333)
@@ -214,7 +291,7 @@ $level-resize-transition-time: 0.5s
     background: linear-gradient(to right, rgba(0,0,0,0) 0%,rgba(0,0,0,$GI) 100%)
     left: -3px
     bottom: 0
-    
+
   #canvas-left-gradient
     left: 0px
     width: 5px
@@ -263,10 +340,10 @@ $level-resize-transition-time: 0.5s
       @include opacity(0.75)
       @include transition(opacity .10s linear)
       color: white
-  
+
       &:hover, &:active
         @include opacity(1)
-    
+
     @media screen and (min-aspect-ratio: 17/10)
       &:not(.premium)
         display: none
@@ -276,18 +353,6 @@ $level-resize-transition-time: 0.5s
     width: 100%
     height: 30px
     background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)
-
-  #fullscreen-editor-background-screen
-    background-color: black
-    opacity: 0.5
-    cursor: pointer
-    display: none
-    position: absolute
-    left: 0
-    right: 0
-    bottom: 0
-    top: 0
-    z-index: 19
 
   #stop-real-time-playback-button, #stop-cinematic-playback-button
     display: none
@@ -342,7 +407,7 @@ $level-resize-transition-time: 0.5s
     width: 100%
     height: 90px
     text-align: center
-    
+
   .hints-view
     position: absolute
     top: 10px
@@ -367,7 +432,7 @@ $level-resize-transition-time: 0.5s
     left: 0
     right: 0
 
-    #playback-view, #thang-hud, #play-footer, #level-footer-background, #level-footer-shadow
+    #playback-view, #play-footer, #level-footer-background, #level-footer-shadow
       display: none
 
     .game-container, .level-content, #game-area, #canvas-wrapper
@@ -385,39 +450,20 @@ $level-resize-transition-time: 0.5s
       right: 0
       left: 0
       bottom: 0
-    
+
   #how-to-play-game-dev-panel
     position: absolute
     right: 0
     top: 52px
     width: 20%
-    bottom: 38px
-    
-  #codeplay-product-banner
-    width: calc(58.5% - 250px)
-    max-width: 100vh
-    position: relative
-    left: 20px
-    top: -7px
-    z-index: 5
-
-html.fullscreen-editor
-  #level-view
-    #fullscreen-editor-background-screen
-      display: block
-
-    #code-area
-      position: fixed
-      width: 95%
-      height: 100%
-      right: 0
+    bottom: -22px
 
 body.ipad #level-view
   // Full-width Surface, preserving aspect ratio, with space for control bar.
-  height: 1024px * (589 / 924) + 50px
+  height: 1024px * (math.div(589, 924)) + 50px
   overflow: hidden
 
-  #code-area, #play-footer, #thang-hud
+  #code-area, #play-footer
     display: none
 
   #level-chat-view
@@ -434,7 +480,7 @@ body.ipad #level-view
     .scrubber .progress
       background-color: rgba(255, 255, 255, 0.4)
 
-  #canvas-wrapper, #control-bar-view, #playback-view, #thang-hud
+  #canvas-wrapper, #control-bar-view, #playback-view
     width: 100%
 
   #canvas-wrapper
@@ -453,3 +499,7 @@ body.ipad #level-view
   background-size: 100% 400px
   height: 400px
   z-index: -9001
+
+#level-chat-view
+  bottom: 45px
+  left: 25px

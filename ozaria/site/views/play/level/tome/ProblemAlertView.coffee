@@ -3,6 +3,7 @@ CocoView = require 'views/core/CocoView'
 GameMenuModal = require 'views/play/menu/GameMenuModal'
 template = require 'ozaria/site/templates/play/level/tome/problem_alert'
 {me} = require 'core/auth'
+userUtils = require 'app/lib/user-utils'
 
 module.exports = class ProblemAlertView extends CocoView
   id: 'problem-alert-view'
@@ -26,12 +27,14 @@ module.exports = class ProblemAlertView extends CocoView
   events:
     'click .close': 'onRemoveClicked'
     'click': -> Backbone.Mediator.publish 'tome:focus-editor', {}
+    'click .ai-help-button': 'onAIHelpClicked'
 
   constructor: (options) ->
     @supermodel = options.supermodel # Has to go before super so events are hooked up
     super options
     @level = options.level
     @session = options.session
+    @aceConfig = options.aceConfig || {}
     if options.problem?
       @problem = options.problem
       @onWindowResize()
@@ -39,12 +42,25 @@ module.exports = class ProblemAlertView extends CocoView
       @$el.hide()
     @duckImg = _.sample(@duckImages)
     $(window).on 'resize', @onWindowResize
+    @creditMessage = ''
+    @showAiBotHelp = false
+    if @aceConfig.levelChat != 'none'
+      if me.isHomeUser() && me.shouldShowLevelAIChat()
+        @showAiBotHelp = true
+      else if me.isTeacher()
+        @showAiBotHelp = true
+      else if me.isStudent()
+        @showAiBotHelp = @aceConfig.levelChat and @aceConfig.levelChat != 'none' and typeof @aceConfig.levelChat == 'string'
 
   destroy: ->
     $(window).off 'resize', @onWindowResize
     super()
 
   afterRender: ->
+    @$('[data-toggle="popover"]').popover()
+    unless @creditMessage
+      @handleUserCreditsMessage()
+
     super()
     if @problem?
       @$el.addClass("alert-#{@problem.level}").hide().fadeIn('slow')
@@ -64,7 +80,11 @@ module.exports = class ProblemAlertView extends CocoView
             message = message.replace /^(Line \d+)/, "$1, time #{age.toFixed(1)}"
           else
             message = "Time #{age.toFixed(1)}: #{message}"
-      @message = format message
+      if @problem.hint and /TypeError: .*? is not a function/.test(message)
+        # This is not useful to add on, so suppress it and just show the hint.
+        @message = null
+      else
+        @message = format message
       @hint = format @problem.hint
 
   onShowProblemAlert: (data) ->
@@ -82,6 +102,7 @@ module.exports = class ProblemAlertView extends CocoView
     @render()
     @onJiggleProblemAlert()
     application.tracker?.trackEvent 'Show problem alert', {levelID: @level.get('slug'), ls: @session?.get('_id')}
+    @announceToScreenReader()
 
   onJiggleProblemAlert: ->
     return unless @problem?
@@ -101,6 +122,12 @@ module.exports = class ProblemAlertView extends CocoView
     @$el.hide()
     Backbone.Mediator.publish 'tome:focus-editor', {}
 
+  onAIHelpClicked: (e) ->
+    rand = _.random(1, 13)
+    message = $.i18n.t('ai.prompt_level_chat_' + rand)
+    Backbone.Mediator.publish 'level:add-user-chat', { message }
+    _.delay (=> @handleUserCreditsMessage()), 5000
+
   onWindowResize: (e) =>
     # TODO: This all seems a little hacky
     if @problem?
@@ -108,5 +135,26 @@ module.exports = class ProblemAlertView extends CocoView
       @$el.css('right', codeAreaWidth + 20 + 'px')
 
       # TODO: calculate this in a more dynamic, less sketchy way
-      spellViewTop = $("#spell-view").position().top - 10 # roughly aligns top of alert with top of first code line
+      spellViewTop = $("#spell-view").position().top - 30 # roughly aligns top of alert with top of first code line
       @$el.css('top', (spellViewTop + @lineOffsetPx) + 'px')
+
+  announceToScreenReader: ->
+    message = @hint or @message
+    if @problem.row?
+      if /Error/.test message
+        update = "Line #{@problem.row + 1}: #{message.replace(/^Line \d+:? ?/, '')}"
+      else
+        update = "Error on line #{@problem.row + 1}: #{message.replace(/^Line \d+:? ?/, '')}"
+    else
+      if /Error/.test message
+        update = message
+      else
+        update = "Error: #{message}"
+    $('#screen-reader-live-updates').append($("<div>#{update}</div>"))  # TODO: move this to a store or lib? Limit how many lines?
+
+  handleUserCreditsMessage: ->
+    userUtils.levelChatCreditsString()
+        .then (res) =>
+          if @creditMessage != res
+            @creditMessage = res
+            @render()

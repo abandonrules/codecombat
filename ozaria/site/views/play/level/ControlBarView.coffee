@@ -78,7 +78,7 @@ module.exports = class ControlBarView extends CocoView
 
   onLoaded: ->
     if @classroom
-      @levelNumber = @classroom.getLevelNumber(@level.get('original'), @levelNumber)
+      @levelNumber = @classroom.getLevelNumber(@level.get('original'), @levelNumber, @courseID)
     else if @campaign
       @levelNumber = @campaign.getLevelNumber(@level.get('original'), @levelNumber)
     if application.getHocCampaign() or @level.get('assessment')
@@ -110,7 +110,7 @@ module.exports = class ControlBarView extends CocoView
       @homeViewClass = 'views/play/CampaignView'
       @homeViewArgs.push gameDevCampaign
     else if me.isSessionless()
-      @homeLink = "/teachers/courses"
+      @homeLink = "/teachers/units"
       @homeViewClass = "views/courses/TeacherCoursesView"
     else if @level.isType('ladder', 'ladder-tutorial', 'hero-ladder', 'course-ladder')
       levelID = @level.get('slug')?.replace(/\-tutorial$/, '') or @level.id
@@ -131,7 +131,7 @@ module.exports = class ControlBarView extends CocoView
         @homeLink += "?course-instance=#{@courseInstanceID}"
 
       @homeViewClass = 'views/play/CampaignView'
-    else if @level.isType('hero', 'hero-coop', 'game-dev', 'web-dev') or window.serverConfig.picoCTF
+    else if @level.isType('hero', 'hero-coop', 'game-dev', 'web-dev')
       @homeLink = '/play'
       @homeViewClass = 'views/play/CampaignView'
       campaign = @level.get 'campaign'

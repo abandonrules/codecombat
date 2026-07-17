@@ -8,7 +8,7 @@ import fetchJson from 'app/core/api/fetch-json'
  */
 export const getCinematic = slugOrId => {
   if (!slugOrId) {
-    throw new Error(`No slugOrId supplied`)
+    throw new Error('No slugOrId supplied')
   }
   return fetchJson(`/db/cinematic/${slugOrId}`)
 }
@@ -24,7 +24,7 @@ export const getCinematic = slugOrId => {
  * @async
  * @returns {Promise<CinematicName[]>} - Sorted by slug
  */
-export const getAllCinematics = () => fetchJson('/db/cinematic?project=slug,name')
+export const getAllCinematics = () => fetchJson('/db/cinematic?project=slug,name,displayName&limit=1000')
 
 /**
  * Updates a cinematic in the database.

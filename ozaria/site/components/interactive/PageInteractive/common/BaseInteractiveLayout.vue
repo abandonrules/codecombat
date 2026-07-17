@@ -1,31 +1,50 @@
 <script>
-  import InteractiveTitle from './InteractiveTitle'
-  import LayoutAspectRatioContainer from '../../../common/LayoutAspectRatioContainer'
-  import LayoutChrome from '../../../common/LayoutChrome'
+import { mapGetters } from 'vuex'
+import InteractiveTitle from './InteractiveTitle'
+import LayoutAspectRatioContainer from '../../../common/LayoutAspectRatioContainer'
+import LayoutChrome from '../../../common/LayoutChrome'
+import utils from 'core/utils'
 
-  export default {
-    components: {
-      LayoutAspectRatioContainer,
-      LayoutChrome,
-      InteractiveTitle
+export default {
+  components: {
+    LayoutAspectRatioContainer,
+    LayoutChrome,
+    InteractiveTitle
+  },
+
+  props: {
+    interactive: {
+      type: Object,
+      required: true
     },
 
-    props: {
-      interactive: {
-        type: Object,
-        required: true
-      },
-
-      artUrl: {
-        type: String,
-        default: undefined
+    artUrl: {
+      type: String,
+      default: undefined
+    }
+  },
+  computed: {
+    ...mapGetters({
+      soundOn: 'layoutChrome/soundOn',
+      getLevelNumber: 'gameContent/getLevelNumber'
+    }),
+    title () {
+      if (!this.interactive) {
+        return ''
       }
+      const id = this.interactive._id
+      const levelNumber = this.getLevelNumber(id) || this.getLevelNumber(this.interactive.original)
+      const levelName = utils.i18n(this.interactive, 'displayName') || utils.i18n(this.interactive, 'name')
+      return `${levelNumber ? `${levelNumber}.` : ''} ${levelName}`
     }
   }
+}
 </script>
 
 <template>
-  <LayoutChrome>
+  <LayoutChrome
+    :title="title"
+  >
     <div class="interactive-page">
       <LayoutAspectRatioContainer
         class="interactive-container"
@@ -69,8 +88,6 @@
     align-items: center;
     justify-content: center;
 
-    background-color: #F1BF33;
-
     .interactive-container {
       min-width: 760px !important;
       min-height: 397px !important;
@@ -93,23 +110,28 @@
   .title-bar {
     flex-grow: 0;
     flex-shrink: 0;
+
+    height: 14.1%;
   }
 
   .interactive-row {
-    flex-grow: 1;
-
     display: flex;
     flex-direction: row;
 
     align-items: stretch;
     justify-content: center;
 
+    height: 85.9%;
+
     .interactive-content {
-      flex-grow: 7;
+      flex-grow: 1;
     }
 
     .interactive-art {
-      flex-grow: 5;
+      flex-grow: 0;
+      flex-shrink: 0;
+
+      width: 41.6%;
 
       display: flex;
 

@@ -1,190 +1,214 @@
 <script>
-  import SwappingVueDraggable from '../../../common/SwappingVueDraggable'
-  import { mapGetters } from 'vuex'
+import SwappingVueDraggable from '../../../common/SwappingVueDraggable'
+import { mapGetters } from 'vuex'
 
-  import BaseInteractiveLayout from '../common/BaseInteractiveLayout'
+import BaseInteractiveLayout from '../common/BaseInteractiveLayout'
 
-  import { putSession } from 'ozaria/site/api/interactive'
-  import { getOzariaAssetUrl } from '../../../../common/ozariaUtils'
-  import { deterministicShuffleForUserAndDay } from '../../../../common/utils'
+import { putSession } from 'ozaria/site/api/interactive'
+import { getOzariaAssetUrl } from '../../../../common/ozariaUtils'
+import { deterministicShuffleForUserAndDay } from '../../../../common/utils'
+import { translateJS } from '../../../../../../app/lib/translate-utils'
 
-  import BaseButton from '../../../common/BaseButton'
-  import ModalInteractive from '../common/ModalInteractive.vue'
+import BaseButton from '../../../common/BaseButton'
+import ModalInteractive from '../common/ModalInteractive.vue'
 
-  export default {
-    components: {
-      BaseButton,
-      ModalInteractive,
-      BaseInteractiveLayout,
+export default {
+  name: 'DragableOrderingIndex',
+  components: {
+    BaseButton,
+    ModalInteractive,
+    BaseInteractiveLayout,
 
-      SwappingVueDraggable
+    SwappingVueDraggable
+  },
+
+  props: {
+    interactive: {
+      type: Object,
+      required: true
     },
 
-    props: {
-      interactive: {
-        type: Object,
-        required: true
-      },
-
-      localizedInteractiveConfig: {
-        type: Object,
-        required: true
-      },
-
-      interactiveSession: {
-        type: Object,
-        default: undefined
-      },
-
-      codeLanguage: {
-        type: String,
-        required: true
-      }
+    localizedInteractiveConfig: {
+      type: Object,
+      required: true
     },
 
-    data () {
-      const shuffle = deterministicShuffleForUserAndDay(
-        me,
-        [ ...Array(this.localizedInteractiveConfig.elements.length).keys() ]
-      )
-
-      return {
-        showModal: false,
-        submitEnabled: true,
-
-        initializedAnswer: false,
-
-        shuffle,
-        promptSlots: this.getShuffledPrompt(shuffle)
-      }
+    interactiveSession: {
+      type: Object,
+      default: undefined
     },
 
-    computed: {
-      ...mapGetters({
-        pastCorrectSubmission: 'interactives/correctSubmissionFromSession'
-      }),
+    codeLanguage: {
+      type: String,
+      required: true
+    },
 
-      labels () {
-        return (this.localizedInteractiveConfig.labels || []).map((label) => {
-          if (typeof label === 'string') {
-            return { text: label }
+    interactiveLanguage: {
+      type: String,
+      default: ''
+    }
+  },
+
+  data () {
+    // FIXME: Currently doesn't work. The swap library must be kept manually in sync
+    // using the handleSwap method.
+    const shuffle = deterministicShuffleForUserAndDay(
+      me,
+      [...Array(this.localizedInteractiveConfig.elements.length).keys()]
+    )
+
+    return {
+      showModal: false,
+      submitEnabled: true,
+
+      initializedAnswer: false,
+
+      shuffle,
+      promptSlots: this.getShuffledPrompt(shuffle)
+    }
+  },
+
+  computed: {
+    ...mapGetters({
+      pastCorrectSubmission: 'interactives/correctSubmissionFromSession'
+    }),
+
+    labels () {
+      return (this.localizedInteractiveConfig.labels || []).map((label) => {
+        if (typeof label === 'string') {
+          if (this.codeLanguage.toLowerCase() === 'cpp' && this.interactiveLanguage.toLowerCase() === 'javascript') {
+            return { text: translateJS(label, 'cpp', false) }
           }
-
-          return label
-        })
-      },
-
-      artUrl () {
-        if (this.interactive.defaultArtAsset) {
-          return getOzariaAssetUrl(this.interactive.defaultArtAsset)
+          return { text: label }
         }
 
-        return undefined
-      },
+        if (this.codeLanguage.toLowerCase() === 'cpp' && this.interactiveLanguage.toLowerCase() === 'javascript') {
+          label.text = translateJS(label.text, 'cpp', false)
+        }
 
-      userAnswer () {
-        return this.promptSlots.map((s) => s.elementId)
-      },
+        return label
+      })
+    },
 
-      solutionCorrect () {
-        for (let i = 0; i < this.userAnswer.length; i++) {
-          if (this.userAnswer[i] !== this.localizedInteractiveConfig.solution[i]) {
-            return false
+    artUrl () {
+      if (this.interactive.defaultArtAsset) {
+        return getOzariaAssetUrl(this.interactive.defaultArtAsset)
+      }
+
+      return undefined
+    },
+
+    userAnswer () {
+      return this.promptSlots.map((s) => s.elementId)
+    },
+
+    solutionCorrect () {
+      for (let i = 0; i < this.userAnswer.length; i++) {
+        if (this.userAnswer[i] !== this.localizedInteractiveConfig.solution[i]) {
+          return false
+        }
+      }
+
+      return true
+    },
+
+    modalMessageTag () {
+      if (this.solutionCorrect) {
+        return 'interactives.phenomenal_job'
+      } else {
+        return 'interactives.try_again'
+      }
+    }
+  },
+
+  watch: {
+    pastCorrectSubmission () {
+      this.initializeFromPastSubmission()
+    }
+  },
+
+  created () {
+    this.initializeFromPastSubmission()
+  },
+
+  methods: {
+    async submitSolution () {
+      if (this.solutionCorrect) {
+        // Straight to standard victory modal rather than interactive modal
+        this.$emit('completed')
+        this.submitEnabled = true
+      } else {
+        this.showModal = true
+        this.submitEnabled = false
+      }
+
+      // TODO save through vuex and block progress until save is successful
+      await putSession(this.interactive._id, {
+        json: {
+          codeLanguage: this.codeLanguage,
+          submission: {
+            correct: this.solutionCorrect,
+            submittedSolution: this.userAnswer
           }
         }
-
-        return true
-      },
-
-      modalMessageTag () {
-        if (this.solutionCorrect) {
-          return 'interactives.phenomenal_job'
-        } else {
-          return 'interactives.try_again'
-        }
-      }
+      })
     },
 
-    watch: {
-      pastCorrectSubmission () {
-        this.initializeFromPastSubmission()
-      }
+    handleSwap (e) {
+      // Manual hack to ensure that UI and data stays in sync.
+      const temp = this.promptSlots[e.oldDraggableIndex]
+      this.promptSlots[e.oldDraggableIndex] = this.promptSlots[e.newDraggableIndex]
+      this.promptSlots[e.newDraggableIndex] = temp
     },
 
-    created () {
+    closeModal () {
+      this.resetAnswer()
+      this.showModal = false
+      this.submitEnabled = true
+    },
+
+    getShuffledPrompt (shuffle) {
+      const elements = this.localizedInteractiveConfig.elements || []
+
+      return shuffle.map((idx) => elements[idx])
+    },
+
+    resetAnswer () {
+      this.promptSlots = this.getShuffledPrompt(this.shuffle)
+
+      this.initializedAnswer = false
       this.initializeFromPastSubmission()
     },
 
-    methods: {
-      async submitSolution () {
-        this.showModal = true
-        this.submitEnabled = false
+    initializeFromPastSubmission () {
+      if (!this.pastCorrectSubmission || this.initializedAnswer) {
+        return
+      }
 
-        // TODO save through vuex and block progress until save is successful
-        await putSession(this.interactive._id, {
-          json: {
-            codeLanguage: this.codeLanguage,
-            submission: {
-              correct: this.solutionCorrect,
-              submittedSolution: this.userAnswer
-            }
-          }
-        })
-      },
+      this.initializedAnswer = true
 
-      closeModal () {
-        if (this.solutionCorrect) {
-          this.$emit('completed')
+      let missingAnswer = false
+      const answer = this.pastCorrectSubmission.submittedSolution.map((elementId) => {
+        const choice = this.localizedInteractiveConfig.elements.find(e => e.elementId === elementId)
+
+        if (choice) {
+          return choice
         } else {
-          this.resetAnswer()
-        }
-
-        this.showModal = false
-        this.submitEnabled = true
-      },
-
-      getShuffledPrompt (shuffle) {
-        const elements = this.localizedInteractiveConfig.elements || []
-
-        return shuffle.map((idx) => elements[idx])
-      },
-
-      resetAnswer () {
-        this.promptSlots = this.getShuffledPrompt(this.shuffle)
-
-        this.initializedAnswer = false
-        this.initializeFromPastSubmission()
-      },
-
-      initializeFromPastSubmission () {
-        if (!this.pastCorrectSubmission || this.initializedAnswer) {
-          return
-        }
-
-        this.initializedAnswer = true
-
-        let missingAnswer = false
-        const answer = this.pastCorrectSubmission.submittedSolution.map((elementId) => {
-          const choice = this.localizedInteractiveConfig.elements.find(e => e.elementId === elementId)
-
-          if (choice) {
-            return choice
-          } else {
-            missingAnswer = true
-            return undefined
-          }
-        })
-
-        if (missingAnswer) {
-          // TODO handle_error_ozaria - undefined state
-          console.error('Unexpected state recovering answer')
+          missingAnswer = true
           return undefined
         }
+      })
 
-        this.promptSlots = answer
+      if (missingAnswer) {
+        // TODO handle_error_ozaria - undefined state
+        console.error('Unexpected state recovering answer')
+        return undefined
       }
+
+      this.promptSlots = answer
     }
   }
+}
 </script>
 
 <template>
@@ -204,7 +228,7 @@
               :key="`${index}-numbers-content`"
             >
               <div>
-                {{ index + 1}}.
+                {{ index + 1 }}.
               </div>
             </li>
             <li
@@ -219,6 +243,7 @@
           class="slots-container prompt-slots"
           tag="ul"
           :options="{ draggable: '.prompt' }"
+          @change="handleSwap"
         >
           <template
             v-for="prompt in promptSlots"
@@ -287,10 +312,11 @@
 
     position: relative;
 
-    .draggable-ordering-lists {
-      flex-grow: 1;
+    user-select: none;
 
+    .draggable-ordering-lists {
       width: 100%;
+      height: 100%;
 
       display: flex;
       flex-direction: row;
@@ -304,8 +330,18 @@
 
   .submit {
     justify-content: flex-end;
-
     margin: 18.69px auto;
+
+    @media(max-height: 799px) {
+      position: absolute;
+      right: -52%;
+      bottom: 0;
+    }
+    @media(max-width: 1199px) {
+      position: absolute;
+      right: -52%;
+      bottom: 0;
+    }
   }
 
   ul {
@@ -402,6 +438,9 @@
         background-size: 7px 11px;
 
         border: 2px solid #acb9fa;
+
+        font-size: 0.85vw;
+        line-height: 1.2vw;
       }
 
       &.sortable-ghost {
@@ -435,6 +474,9 @@
       div {
         background-color: #acb9fa;
         border: 2px solid #acb9fa;
+
+        font-size: 0.85vw;
+        line-height: 1.2vw;
       }
     }
 

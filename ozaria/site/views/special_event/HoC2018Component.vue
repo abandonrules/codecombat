@@ -1,7 +1,7 @@
 <template lang="pug">
   #hoc-2018-page
     .hoc-header
-      h4(data-i18n="hoc_2018.banner")
+      h4(data-i18n="hoc_2018.banner_ozar")
 
     .container
 
@@ -24,7 +24,7 @@
         .col-md-4
           a.btn.btn-primary.btn-lg(href="/play/hoc-2018" data-i18n="hoc_2018.try_activity")
         .col-md-4
-          a.btn.btn-primary.btn-lg(href="http://files.codecombat.com/docs/resources/hourofcode/HourofCodeCodeCombatLessonPlan2018.pdf" target="_blank" data-i18n="hoc_2018.download_pdf")
+          a.btn.btn-primary.btn-lg(href="https://files.codecombat.com/docs/resources/hourofcode/HourofCodeCodeCombatLessonPlan2018.pdf" target="_blank" data-i18n="hoc_2018.download_pdf")
 
       .row
         br
@@ -100,19 +100,19 @@ module.exports = Vue.extend({
       ]
     }
   },
-
-  data: function() {
-    return {
-      teacherEmail: ''
-    }
-  },
   props: {
     onGetCS1Free: {
       type: Function,
       required: true
     }
+  },
+
+  data: function () {
+    return {
+      teacherEmail: ''
+    }
   }
-});
+})
 </script>
 
 <style lang="sass">

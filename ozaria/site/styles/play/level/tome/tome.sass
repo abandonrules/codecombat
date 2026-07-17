@@ -77,23 +77,19 @@
 // Set z-index of autocomplete popup smaller than the one of popovers
 .ace_editor.ace_autocomplete 
   z-index: 20 !important
+
+  // Makes scroll bar always display by faking it.
+  .ace_scrollbar::-webkit-scrollbar
+    -webkit-appearance: none
+    width: 7px
+  .ace_scrollbar::-webkit-scrollbar-thumb
+    border-radius: 4px
+    background-color: rgba(0, 0, 0, .5)
+    -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5)
+
   .ace_content
     .ace_line .ace_rightAlignedText
       display: none
     .ace_line.ace_selected .ace_rightAlignedText
       display: inline-block
 
-html.no-borderimage
-  #tome-view
-    .popover
-      background: transparent url(/images/level/popover_background.png)
-      background-size: 100% 100%
-      border: 0
-
-#code-area.fullscreen-editor
-  #tome-view
-    .popover.pinned
-      min-width: 600px
-      bottom: inherit
-      right: 50%
-      margin-right: -300px
